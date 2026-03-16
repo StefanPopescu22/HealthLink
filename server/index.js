@@ -1,15 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+require("./config/db");
+
+const healthRoutes = require("./routes/healthRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("HealthLink API merge corect");
-});
+app.use("/api/health", healthRoutes);
 
 const PORT = process.env.PORT || 5000;
 
