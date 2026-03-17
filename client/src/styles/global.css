@@ -1,13 +1,19 @@
+@import "./variables.css";
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f7fb;
-  color: #222;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 a {
@@ -15,6 +21,66 @@ a {
   color: inherit;
 }
 
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 button {
+  border: none;
+  background: none;
   cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.page-container {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.section-spacing {
+  padding: 80px 0;
+}
+
+.page-title {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  margin-top: 14px;
+  font-size: 1.05rem;
+  color: var(--color-text-soft);
+  line-height: 1.7;
+}
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .section-spacing {
+    padding: 56px 0;
+  }
+
+  .page-container {
+    width: min(100% - 20px, 1280px);
+  }
 }
