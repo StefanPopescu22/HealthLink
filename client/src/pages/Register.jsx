@@ -1,7 +1,17 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import {
+  FaArrowRight,
+  FaEnvelope,
+  FaHospital,
+  FaLock,
+  FaShieldAlt,
+  FaUser,
+  FaUserMd,
+} from "react-icons/fa";
 import "../styles/Register.css";
+import Footer from "../components/Footer";
 
 function Register() {
   const { register } = useContext(AuthContext);
@@ -52,54 +62,152 @@ function Register() {
   };
 
   return (
-    <div className="register-page">
-      <h1>Creare cont</h1>
+    <main className="register-page-medical">
+      <div className="page-container register-grid">
+        <section className="register-info-panel">
+          <div className="register-badge">
+            <FaShieldAlt />
+            <span>Modern healthcare onboarding</span>
+          </div>
 
-      <form className="register-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="firstName"
-          placeholder="Prenume"
-          value={formData.firstName}
-          onChange={handleChange}
-        />
+          <h1 className="register-title">
+            Create your <span className="gradient-text">HealthLink</span> profile
+          </h1>
 
-        <input
-          type="text"
-          name="lastName"
-          placeholder="Nume"
-          value={formData.lastName}
-          onChange={handleChange}
-        />
+          <p className="register-subtitle">
+            Build a secure digital identity for accessing clinics, managing appointments,
+            storing documents and using AI-powered healthcare support.
+          </p>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
+          <div className="register-role-cards">
+            <article className="register-role-card">
+              <div className="register-role-icon">
+                <FaUser />
+              </div>
+              <div>
+                <h3>Patient Access</h3>
+                <p>Schedule consultations, manage analyses and use the chatbot assistant.</p>
+              </div>
+            </article>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Parola"
-          value={formData.password}
-          onChange={handleChange}
-        />
+            <article className="register-role-card">
+              <div className="register-role-icon">
+                <FaUserMd />
+              </div>
+              <div>
+                <h3>Doctor & Clinic Access</h3>
+                <p>Organize appointments, patient information and healthcare workflows.</p>
+              </div>
+            </article>
 
-        <select name="role" value={formData.role} onChange={handleChange}>
-          <option value="patient">Pacient</option>
-          <option value="doctor">Doctor</option>
-          <option value="clinic">Clinica</option>
-          <option value="admin">Administrator</option>
-        </select>
+            <article className="register-role-card">
+              <div className="register-role-icon">
+                <FaHospital />
+              </div>
+              <div>
+                <h3>Connected Medical Ecosystem</h3>
+                <p>Bring multiple healthcare actors into one coordinated digital platform.</p>
+              </div>
+            </article>
+          </div>
+        </section>
 
-        <button type="submit">Register</button>
-      </form>
+        <section className="register-form-panel">
+          <div className="register-form-card">
+            <div className="register-form-header">
+              <h2>Create account</h2>
+              <p>Complete the form below to start using the platform.</p>
+            </div>
 
-      {error && <p className="error-message">{error}</p>}
-    </div>
+            <form className="register-form-medical" onSubmit={handleSubmit}>
+              <div className="register-row">
+                <div className="register-input-group">
+                  <label>Prenume</label>
+                  <div className="register-input-wrapper">
+                    <FaUser />
+                    <input
+                      type="text"
+                      name="firstName"
+                      placeholder="Prenume"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="register-input-group">
+                  <label>Nume</label>
+                  <div className="register-input-wrapper">
+                    <FaUser />
+                    <input
+                      type="text"
+                      name="lastName"
+                      placeholder="Nume"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="register-input-group">
+                <label>Email</label>
+                <div className="register-input-wrapper">
+                  <FaEnvelope />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Adresa de email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="register-input-group">
+                <label>Parola</label>
+                <div className="register-input-wrapper">
+                  <FaLock />
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Creeaza o parola"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="register-input-group">
+                <label>Rol</label>
+                <div className="register-select-wrapper">
+                  <select name="role" value={formData.role} onChange={handleChange}>
+                    <option value="patient">Pacient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="clinic">Clinica</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+              </div>
+
+              {error && <p className="register-error">{error}</p>}
+
+              <button type="submit" className="primary-btn register-submit-btn">
+                Create Account
+                <FaArrowRight />
+              </button>
+            </form>
+
+            <div className="register-footer-note">
+              <span>Ai deja cont?</span>
+              <Link to="/login">Autentifica-te</Link>
+            </div>
+          </div>
+        </section>
+      </div>
+     <Footer />
+    </main>
+      
   );
 }
 

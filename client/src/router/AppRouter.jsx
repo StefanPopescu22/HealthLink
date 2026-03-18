@@ -6,6 +6,10 @@ import RoleProtectedRoute from "../components/RoleProtectedRoute";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import Clinics from "../pages/Clinics";
+import ClinicProfile from "../pages/ClinicProfile";
+import DoctorProfile from "../pages/DoctorProfile";
+import Chatbot from "../pages/Chatbot";
 import DashboardPatient from "../pages/DashboardPatient";
 import DashboardDoctor from "../pages/DashboardDoctor";
 import DashboardClinic from "../pages/DashboardClinic";
@@ -20,6 +24,11 @@ function AppRouter() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        <Route path="/clinics" element={<Clinics />} />
+        <Route path="/clinic-profile" element={<ClinicProfile />} />
+        <Route path="/doctor-profile" element={<DoctorProfile />} />
+        <Route path="/chatbot" element={<Chatbot />} />
 
         <Route
           path="/dashboard-patient"
@@ -61,7 +70,7 @@ function AppRouter() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <div>Profil utilizator</div>
+              <div>Profile Page</div>
             </ProtectedRoute>
           }
         />

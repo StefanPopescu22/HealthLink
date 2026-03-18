@@ -1,0 +1,229 @@
+.clinics-page {
+  padding: 42px 0 72px;
+}
+
+.clinics-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.clinics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--color-primary);
+  backdrop-filter: blur(10px);
+  margin-bottom: 22px;
+}
+
+.clinics-title {
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.clinics-subtitle {
+  margin-top: 18px;
+  color: var(--color-text-soft);
+  line-height: 1.8;
+  font-size: 1.05rem;
+  max-width: 720px;
+}
+
+.clinics-search-card {
+  padding: 26px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.clinics-search-top h3 {
+  font-size: 1.35rem;
+  margin-bottom: 6px;
+}
+
+.clinics-search-top p {
+  color: var(--color-text-soft);
+  line-height: 1.7;
+}
+
+.clinics-search-grid {
+  display: grid;
+  gap: 14px;
+  margin: 22px 0 18px;
+}
+
+.clinics-input,
+.clinics-select {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid var(--color-border);
+}
+
+.clinics-input svg,
+.clinics-select svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.clinics-input input,
+.clinics-select select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.clinics-search-btn {
+  width: 100%;
+}
+
+.clinics-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.clinics-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: white;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+  transition: var(--transition);
+}
+
+.clinics-filter-pill.active,
+.clinics-filter-pill:hover {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.clinics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.clinic-card {
+  padding: 26px;
+  border-radius: 26px;
+  transition: var(--transition);
+}
+
+.clinic-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.clinic-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.clinic-card-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--gradient-soft);
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}
+
+.clinic-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.clinic-card h2 {
+  font-size: 1.35rem;
+  margin-bottom: 10px;
+}
+
+.clinic-specialty {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.clinic-description {
+  color: var(--color-text-soft);
+  line-height: 1.75;
+  margin-bottom: 18px;
+}
+
+.clinic-meta {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+  color: var(--color-text-soft);
+}
+
+.clinic-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clinic-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clinic-book-btn {
+  min-width: 160px;
+}
+
+@media (max-width: 1180px) {
+  .clinics-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .clinics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .clinics-page {
+    padding: 28px 0 54px;
+  }
+
+  .clinics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clinic-actions .primary-btn,
+  .clinic-actions .secondary-btn {
+    width: 100%;
+  }
+}
