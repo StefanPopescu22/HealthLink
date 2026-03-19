@@ -167,8 +167,8 @@ function Login() {
             </form>
 
             <div className="auth-footer-note">
-              <span>Nu ai cont?</span>
-              <Link to="/register">Creeaza cont</Link>
+              <span>Don't have an account?</span>
+              <Link to="/register">Sign Up</Link>
             </div>
           </div>
         </section>

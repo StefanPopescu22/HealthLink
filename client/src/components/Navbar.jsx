@@ -55,11 +55,18 @@ function Navbar() {
             <NavLink to="/clinics" onClick={closeMenu}>
               Clinics
             </NavLink>
-            <NavLink to="/doctor-profile" onClick={closeMenu}>
+            <NavLink to="/doctors" onClick={closeMenu}>
               Doctors
             </NavLink>
             <NavLink to="/chatbot" onClick={closeMenu}>
               AI Assistant
+            </NavLink>
+            <NavLink to="/services" onClick={closeMenu}>
+              Services
+            </NavLink>
+
+            <NavLink to="/specialties" onClick={closeMenu}>
+              Specialties
             </NavLink>
           </div>
 

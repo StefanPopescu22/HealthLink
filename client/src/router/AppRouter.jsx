@@ -14,6 +14,14 @@ import DashboardPatient from "../pages/DashboardPatient";
 import DashboardDoctor from "../pages/DashboardDoctor";
 import DashboardClinic from "../pages/DashboardClinic";
 import AdminPanel from "../pages/AdminPanel";
+import Appointments from "../pages/Appointments";
+import MedicalDocuments from "../pages/MedicalDocument";
+import MedicalAnalyses from "../pages/MedicalAnalyses";
+import Profile from "../pages/Profile";
+import Doctors from "../pages/Doctors";
+import Services from "../pages/Services";
+import Specialties from "../pages/Specialties";
+import NotFound from "../pages/NotFound";
 
 function AppRouter() {
   return (
@@ -29,6 +37,47 @@ function AppRouter() {
         <Route path="/clinic-profile" element={<ClinicProfile />} />
         <Route path="/doctor-profile" element={<DoctorProfile />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+         <Route path="/doctors" element={<Doctors />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/specialties" element={<Specialties />} />
+        <Route path="*" element={<NotFound />} />
+
+        <Route
+          path="/appointments"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <Appointments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/medical-documents"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <MedicalDocuments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/medical-analyses"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <MedicalAnalyses />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard-patient"

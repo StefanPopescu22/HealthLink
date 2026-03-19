@@ -199,8 +199,8 @@ function Register() {
             </form>
 
             <div className="register-footer-note">
-              <span>Ai deja cont?</span>
-              <Link to="/login">Autentifica-te</Link>
+              <span>Already have an account?</span>
+              <Link to="/login">Sign In</Link>
             </div>
           </div>
         </section>
