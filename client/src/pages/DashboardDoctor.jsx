@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/DashboardDoctor.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function DashboardDoctor() {
   const stats = [
@@ -100,8 +101,12 @@ function DashboardDoctor() {
 
   return (
     <>
-      <main className="doctor-dashboard-page">
-        <div className="page-container">
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+            <div className="page-container">
           <section className="doctor-dashboard-hero">
             <div className="doctor-dashboard-hero-content">
               <div className="doctor-dashboard-badge">
@@ -293,6 +298,8 @@ function DashboardDoctor() {
               ))}
             </div>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

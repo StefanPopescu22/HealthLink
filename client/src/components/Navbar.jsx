@@ -1,7 +1,8 @@
 import { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FaBars, FaTimes, FaRegHeart } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
+import { FaHeartPulse } from "react-icons/fa6";
 import "../styles/Navbar.css";
 
 function Navbar() {
@@ -9,9 +10,11 @@ function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const closeMenu = () => setMenuOpen(false);
+
   const handleLogout = () => {
     logout();
-    setMenuOpen(false);
+    closeMenu();
     navigate("/login");
   };
 
@@ -32,42 +35,27 @@ function Navbar() {
     }
   };
 
-  const closeMenu = () => setMenuOpen(false);
-
   return (
     <header className="site-header">
       <div className="page-container">
         <nav className="site-navbar">
           <Link to="/" className="brand-logo" onClick={closeMenu}>
             <div className="brand-icon">
-              <FaRegHeart />
+              <FaHeartPulse />
             </div>
             <div className="brand-text">
               <span className="brand-name">HealthLink</span>
-              <span className="brand-tagline">Smart Medical Services Platform</span>
+              <span className="brand-tagline">Connected Medical Services</span>
             </div>
           </Link>
 
           <div className={`nav-center ${menuOpen ? "open" : ""}`}>
-            <NavLink to="/" onClick={closeMenu}>
-              Home
-            </NavLink>
-            <NavLink to="/clinics" onClick={closeMenu}>
-              Clinics
-            </NavLink>
-            <NavLink to="/doctors" onClick={closeMenu}>
-              Doctors
-            </NavLink>
-            <NavLink to="/chatbot" onClick={closeMenu}>
-              AI Assistant
-            </NavLink>
-            <NavLink to="/services" onClick={closeMenu}>
-              Services
-            </NavLink>
-
-            <NavLink to="/specialties" onClick={closeMenu}>
-              Specialties
-            </NavLink>
+            <NavLink to="/" onClick={closeMenu}>Home</NavLink>
+            <NavLink to="/clinics" onClick={closeMenu}>Clinics</NavLink>
+            <NavLink to="/doctors" onClick={closeMenu}>Doctors</NavLink>
+            <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
+            <NavLink to="/specialties" onClick={closeMenu}>Specialties</NavLink>
+            <NavLink to="/chatbot" onClick={closeMenu}>AI Assistant</NavLink>
           </div>
 
           <div className={`nav-actions ${menuOpen ? "open" : ""}`}>
@@ -75,6 +63,9 @@ function Navbar() {
               <>
                 <Link to={getDashboardPath()} className="secondary-btn" onClick={closeMenu}>
                   Dashboard
+                </Link>
+                <Link to="/profile" className="secondary-btn" onClick={closeMenu}>
+                  Profile
                 </Link>
                 <button className="primary-btn nav-auth-btn" onClick={handleLogout}>
                   Logout

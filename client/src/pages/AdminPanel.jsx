@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/AdminPanel.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function AdminPanel() {
   const stats = [
@@ -76,8 +77,12 @@ function AdminPanel() {
 
   return (
     <>
-      <main className="admin-page">
-        <div className="page-container">
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+           <div className="page-container">
           <section className="admin-hero">
             <div className="admin-hero-content">
               <div className="admin-badge">
@@ -260,6 +265,8 @@ function AdminPanel() {
               ))}
             </div>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

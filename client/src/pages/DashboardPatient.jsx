@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/DashboardPatient.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function DashboardPatient() {
   const stats = [
@@ -96,18 +97,18 @@ function DashboardPatient() {
     },
   ];
 
-  const quickActions = [
+    const quickActions = [
     {
       icon: <FaCalendarCheck />,
       title: "Book Appointment",
       text: "Schedule a new consultation with a doctor or clinic.",
-      link: "/clinics",
+      link: "/appointments",
     },
     {
       icon: <FaNotesMedical />,
-      title: "Upload Documents",
+      title: "Medical Documents",
       text: "Store analyses, prescriptions and important medical files.",
-      link: "/register",
+      link: "/medical-documents",
     },
     {
       icon: <FaRobot />,
@@ -115,12 +116,16 @@ function DashboardPatient() {
       text: "Describe symptoms and get specialty recommendations.",
       link: "/chatbot",
     },
-  ];
+    ];
 
   return (
     <>
-      <main className="patient-dashboard-page">
-        <div className="page-container">
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+            <div className="page-container">
           <section className="patient-hero">
             <div className="patient-hero-content">
               <div className="patient-hero-badge">
@@ -200,7 +205,7 @@ function DashboardPatient() {
                     <p>Your next scheduled medical visits.</p>
                   </div>
 
-                  <Link to="/clinics" className="patient-inline-link">
+                  <Link to="/appointments" className="patient-inline-link">
                     Manage
                   </Link>
                 </div>
@@ -240,8 +245,7 @@ function DashboardPatient() {
                     <h2>Recent Medical Documents</h2>
                     <p>Latest uploaded analyses and reports.</p>
                   </div>
-
-                  <Link to="/register" className="patient-inline-link">
+                  <Link to="/medical-documents" className="patient-inline-link">
                     View all
                   </Link>
                 </div>
@@ -358,6 +362,8 @@ function DashboardPatient() {
               ))}
             </div>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

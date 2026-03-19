@@ -180,7 +180,7 @@ function Clinics() {
                   <Link to="/clinic-profile" className="secondary-btn">
                     View Profile
                   </Link>
-                  <Link to="/dashboard-patient" className="primary-btn clinic-book-btn">
+                  <Link to="/appointments" className="primary-btn clinic-book-btn">
                     <FaCalendarCheck />
                     Book Visit
                   </Link>

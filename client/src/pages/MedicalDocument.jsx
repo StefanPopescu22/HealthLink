@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/MedicalDocuments.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function MedicalDocuments() {
   const documents = [
@@ -33,9 +34,13 @@ function MedicalDocuments() {
   ];
 
   return (
-    <>
-      <main className="documents-page">
-        <div className="page-container">
+   <>
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+            <div className="page-container">
           <section className="documents-hero">
             <div className="documents-hero-content">
               <div className="documents-badge">
@@ -111,6 +116,8 @@ function MedicalDocuments() {
               <FaArrowRight />
             </button>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

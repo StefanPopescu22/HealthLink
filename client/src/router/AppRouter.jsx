@@ -9,6 +9,9 @@ import Register from "../pages/Register";
 import Clinics from "../pages/Clinics";
 import ClinicProfile from "../pages/ClinicProfile";
 import DoctorProfile from "../pages/DoctorProfile";
+import Doctors from "../pages/Doctors";
+import Services from "../pages/Services";
+import Specialties from "../pages/Specialties";
 import Chatbot from "../pages/Chatbot";
 import DashboardPatient from "../pages/DashboardPatient";
 import DashboardDoctor from "../pages/DashboardDoctor";
@@ -18,9 +21,6 @@ import Appointments from "../pages/Appointments";
 import MedicalDocuments from "../pages/MedicalDocument";
 import MedicalAnalyses from "../pages/MedicalAnalyses";
 import Profile from "../pages/Profile";
-import Doctors from "../pages/Doctors";
-import Services from "../pages/Services";
-import Specialties from "../pages/Specialties";
 import NotFound from "../pages/NotFound";
 
 function AppRouter() {
@@ -36,48 +36,10 @@ function AppRouter() {
         <Route path="/clinics" element={<Clinics />} />
         <Route path="/clinic-profile" element={<ClinicProfile />} />
         <Route path="/doctor-profile" element={<DoctorProfile />} />
-        <Route path="/chatbot" element={<Chatbot />} />
-
-         <Route path="/doctors" element={<Doctors />} />
+        <Route path="/doctors" element={<Doctors />} />
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
-        <Route path="*" element={<NotFound />} />
-
-        <Route
-          path="/appointments"
-          element={
-            <RoleProtectedRoute allowedRoles={["patient"]}>
-              <Appointments />
-            </RoleProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/medical-documents"
-          element={
-            <RoleProtectedRoute allowedRoles={["patient"]}>
-              <MedicalDocuments />
-            </RoleProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/medical-analyses"
-          element={
-            <RoleProtectedRoute allowedRoles={["patient"]}>
-              <MedicalAnalyses />
-            </RoleProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/chatbot" element={<Chatbot />} />
 
         <Route
           path="/dashboard-patient"
@@ -116,13 +78,42 @@ function AppRouter() {
         />
 
         <Route
+          path="/appointments"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <Appointments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/medical-documents"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <MedicalDocuments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/medical-analyses"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <MedicalAnalyses />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
-              <div>Profile Page</div>
+              <Profile />
             </ProtectedRoute>
           }
         />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/DashboardClinic.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function DashboardClinic() {
   const stats = [
@@ -74,9 +75,13 @@ function DashboardClinic() {
   ];
 
   return (
-    <>
-      <main className="clinic-dashboard-page">
-        <div className="page-container">
+   <>
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+             <div className="page-container">
           <section className="clinic-dashboard-hero">
             <div className="clinic-dashboard-hero-content">
               <div className="clinic-dashboard-badge">
@@ -267,6 +272,8 @@ function DashboardClinic() {
               ))}
             </div>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

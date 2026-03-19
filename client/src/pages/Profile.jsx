@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/Profile.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function Profile() {
   const personalInfo = [
@@ -26,8 +27,12 @@ function Profile() {
 
   return (
     <>
-      <main className="profile-page">
-        <div className="page-container">
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+            <div className="page-container">
           <section className="profile-hero soft-card">
             <div className="profile-hero-main">
               <div className="profile-badge">
@@ -104,6 +109,8 @@ function Profile() {
               <p>Use a valid phone number for urgent healthcare communication.</p>
             </article>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 

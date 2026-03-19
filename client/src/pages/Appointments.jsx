@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
 import "../styles/Appointments.css";
+import DashboardSidebar from "../components/DashboardSidebar";
 
 function Appointments() {
   const upcomingAppointments = [
@@ -52,8 +53,12 @@ function Appointments() {
 
   return (
     <>
-      <main className="appointments-page">
-        <div className="page-container">
+      <main className="dashboard-screen">
+        <div className="page-container dashboard-shell-grid">
+          <DashboardSidebar />
+
+          <div className="dashboard-page-content">
+            <div className="page-container">
           <section className="appointments-hero">
             <div className="appointments-hero-content">
               <div className="appointments-badge">
@@ -207,6 +212,8 @@ function Appointments() {
               </div>
             </div>
           </section>
+        </div>
+          </div>
         </div>
       </main>
 
