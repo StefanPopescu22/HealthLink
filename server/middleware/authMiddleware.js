@@ -4,7 +4,9 @@ const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token lipsa sau invalid." });
+    return res.status(401).json({
+      message: "Missing or invalid authorization token.",
+    });
   }
 
   const token = authHeader.split(" ")[1];
@@ -14,15 +16,20 @@ const authenticateToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token expirat sau invalid." });
+    return res.status(401).json({
+      message: "Expired or invalid token.",
+    });
   }
 };
 
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Nu ai acces la aceasta resursa." });
+      return res.status(403).json({
+        message: "You do not have access to this resource.",
+      });
     }
+
     next();
   };
 };

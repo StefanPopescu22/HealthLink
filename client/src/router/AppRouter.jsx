@@ -22,6 +22,9 @@ import MedicalDocuments from "../pages/MedicalDocument";
 import MedicalAnalyses from "../pages/MedicalAnalyses";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
+import AdminCreateClinic from "../pages/AdminCreateClinic";
+import AdminCreateDoctor from "../pages/AdminCreateDoctor";
+import ClinicCreateDoctor from "../pages/ClinicCreateDoctor";
 
 function AppRouter() {
   return (
@@ -40,6 +43,33 @@ function AppRouter() {
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+        <Route
+          path="/admin/create-clinic"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminCreateClinic />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-doctor"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminCreateDoctor />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/clinic/create-doctor"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>
+              <ClinicCreateDoctor />
+            </RoleProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard-patient"

@@ -35,26 +35,23 @@ function DashboardSidebar() {
     { to: "/dashboard-doctor", label: "Schedule", icon: <FaCalendarCheck /> },
     { to: "/dashboard-doctor", label: "Patients", icon: <FaUserGroup /> },
     { to: "/dashboard-doctor", label: "Medical Notes", icon: <FaNotesMedical /> },
-    { to: "/chatbot", label: "AI Insights", icon: <FaRobot /> },
     { to: "/profile", label: "Profile", icon: <FaUser /> },
   ];
 
   const clinicLinks = [
     { to: "/dashboard-clinic", label: "Overview", icon: <FaChartLine /> },
-    { to: "/dashboard-clinic", label: "Doctors", icon: <FaUserDoctor /> },
-    { to: "/dashboard-clinic", label: "Services", icon: <FaStethoscope /> },
-    { to: "/dashboard-clinic", label: "Bookings", icon: <FaCalendarCheck /> },
+    { to: "/clinic/create-doctor", label: "Create Doctor", icon: <FaUserDoctor /> },
     { to: "/clinic-profile", label: "Clinic Profile", icon: <FaHospital /> },
     { to: "/profile", label: "Profile", icon: <FaUser /> },
   ];
 
   const adminLinks = [
     { to: "/admin", label: "Overview", icon: <FaChartLine /> },
-    { to: "/admin", label: "Approvals", icon: <FaClipboardCheck /> },
+    { to: "/admin/create-clinic", label: "Create Clinic", icon: <FaClipboardCheck /> },
+    { to: "/admin/create-doctor", label: "Create Doctor", icon: <FaUserDoctor /> },
     { to: "/clinics", label: "Clinics", icon: <FaHospital /> },
-    { to: "/doctors", label: "Doctors", icon: <FaUserDoctor /> },
+    { to: "/doctors", label: "Doctors", icon: <FaUserShield /> },
     { to: "/services", label: "Services", icon: <FaStethoscope /> },
-    { to: "/profile", label: "Profile", icon: <FaUserShield /> },
   ];
 
   const linksByRole = {

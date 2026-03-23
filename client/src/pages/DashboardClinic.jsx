@@ -54,25 +54,25 @@ function DashboardClinic() {
   ];
 
   const actions = [
-    {
-      icon: <FaUserDoctor />,
-      title: "Manage Doctors",
-      text: "Add, edit and organize specialists available in the clinic.",
-      link: "/dashboard-clinic",
-    },
-    {
-      icon: <FaStethoscope />,
-      title: "Manage Services",
-      text: "Update consultation types, specialties and medical service information.",
-      link: "/dashboard-clinic",
-    },
-    {
-      icon: <FaCalendarCheck />,
-      title: "Review Bookings",
-      text: "Confirm, cancel or coordinate patient appointments efficiently.",
-      link: "/dashboard-clinic",
-    },
-  ];
+  {
+    icon: <FaUserDoctor />,
+    title: "Create Doctor",
+    text: "Add a doctor account assigned automatically to your clinic.",
+    link: "/clinic/create-doctor",
+  },
+  {
+    icon: <FaStethoscope />,
+    title: "Manage Services",
+    text: "Update consultation types, specialties and medical service information.",
+    link: "/dashboard-clinic",
+  },
+  {
+    icon: <FaCalendarCheck />,
+    title: "Review Bookings",
+    text: "Confirm, cancel or coordinate patient appointments efficiently.",
+    link: "/dashboard-clinic",
+  },
+];
 
   return (
    <>

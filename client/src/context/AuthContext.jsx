@@ -40,7 +40,6 @@ function AuthProvider({ children }) {
   useEffect(() => {
     const restoreSession = async () => {
       const token = localStorage.getItem("token");
-      const storedUser = localStorage.getItem("user");
 
       if (!token) {
         setLoading(false);
@@ -51,10 +50,7 @@ function AuthProvider({ children }) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const response = await api.get("/auth/me");
         setUser(response.data);
-
-        if (!storedUser) {
-          localStorage.setItem("user", JSON.stringify(response.data));
-        }
+        localStorage.setItem("user", JSON.stringify(response.data));
       } catch (error) {
         clearAuth();
       } finally {

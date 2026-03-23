@@ -137,7 +137,7 @@ function Login() {
                   <input
                     type="email"
                     name="email"
-                    placeholder="Introdu adresa de email"
+                    placeholder="Email Address"
                     value={formData.email}
                     onChange={handleChange}
                   />
@@ -145,13 +145,13 @@ function Login() {
               </div>
 
               <div className="input-group">
-                <label>Parola</label>
+                <label>Password</label>
                 <div className="input-wrapper">
                   <FaLock />
                   <input
                     type="password"
                     name="password"
-                    placeholder="Introdu parola"
+                    placeholder="Enter the password"
                     value={formData.password}
                     onChange={handleChange}
                   />

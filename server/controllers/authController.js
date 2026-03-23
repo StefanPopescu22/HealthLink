@@ -1,10 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const {
-  findUserByEmail,
-  findUserById,
-  createUser,
-} = require("../models/userModel");
+const { findUserByEmail, findUserById, createUser } = require("../models/userModel");
 
 const signToken = (user) => {
   return jwt.sign(
@@ -20,21 +16,20 @@ const signToken = (user) => {
 
 const register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ message: "Toate campurile obligatorii trebuie completate." });
+      return res.status(400).json({
+        message: "First name, last name, email and password are required.",
+      });
     }
 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ message: "Exista deja un cont cu acest email." });
+      return res.status(409).json({
+        message: "An account with this email already exists.",
+      });
     }
-
-    // Pentru demo/test poti lasa selectie de rol.
-    // Pentru varianta finala, schimba in: const finalRole = "patient";
-    const allowedRoles = ["patient", "doctor", "clinic", "admin"];
-    const finalRole = allowedRoles.includes(role) ? role : "patient";
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -43,19 +38,22 @@ const register = async (req, res) => {
       lastName,
       email,
       passwordHash,
-      role: finalRole,
+      role: "patient",
     });
 
     const user = await findUserById(userId);
     const token = signToken(user);
 
     return res.status(201).json({
-      message: "Cont creat cu succes.",
+      message: "Patient account created successfully.",
       token,
       user,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Eroare la inregistrare.", error: error.message });
+    return res.status(500).json({
+      message: "Registration failed.",
+      error: error.message,
+    });
   }
 };
 
@@ -64,33 +62,44 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Emailul si parola sunt obligatorii." });
+      return res.status(400).json({
+        message: "Email and password are required.",
+      });
     }
 
     const user = await findUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ message: "Email sau parola incorecta." });
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
     }
 
     if (user.is_blocked) {
-      return res.status(403).json({ message: "Contul este blocat." });
+      return res.status(403).json({
+        message: "This account is blocked.",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      return res.status(401).json({ message: "Email sau parola incorecta." });
+      return res.status(401).json({
+        message: "Invalid email or password.",
+      });
     }
 
     const safeUser = await findUserById(user.id);
     const token = signToken(safeUser);
 
     return res.status(200).json({
-      message: "Autentificare reusita.",
+      message: "Login successful.",
       token,
       user: safeUser,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Eroare la autentificare.", error: error.message });
+    return res.status(500).json({
+      message: "Login failed.",
+      error: error.message,
+    });
   }
 };
 
@@ -99,12 +108,17 @@ const getMe = async (req, res) => {
     const user = await findUserById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ message: "Utilizatorul nu a fost gasit." });
+      return res.status(404).json({
+        message: "User not found.",
+      });
     }
 
     return res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({ message: "Eroare la preluarea utilizatorului.", error: error.message });
+    return res.status(500).json({
+      message: "Failed to load current user.",
+      error: error.message,
+    });
   }
 };
 

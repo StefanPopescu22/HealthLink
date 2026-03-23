@@ -1,0 +1,130 @@
+.admin-doctor-page {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-doctor-header,
+.admin-doctor-form-card {
+  padding: 26px;
+  border-radius: 28px;
+}
+
+.admin-doctor-header h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.admin-doctor-header p {
+  color: var(--color-text-soft);
+  line-height: 1.8;
+}
+
+.admin-doctor-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.admin-doctor-input-group {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-doctor-input-group.full {
+  grid-column: 1 / -1;
+}
+
+.admin-doctor-input-group label {
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+
+.admin-doctor-input-wrapper,
+.admin-doctor-select-wrapper {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid var(--color-border);
+}
+
+.admin-doctor-input-wrapper svg,
+.admin-doctor-select-wrapper svg {
+  color: var(--color-primary);
+}
+
+.admin-doctor-input-wrapper input,
+.admin-doctor-select-wrapper select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.admin-doctor-input-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  outline: none;
+  font: inherit;
+}
+
+.admin-doctor-specialties-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-doctor-specialty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #f8fbff;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+}
+
+.admin-doctor-message {
+  margin-top: 18px;
+  font-weight: 600;
+}
+
+.admin-doctor-message.error {
+  color: var(--color-danger);
+}
+
+.admin-doctor-message.success {
+  color: var(--color-success);
+}
+
+.admin-doctor-submit-btn {
+  margin-top: 22px;
+}
+
+@media (max-width: 768px) {
+  .admin-doctor-header,
+  .admin-doctor-form-card {
+    padding: 20px 16px;
+  }
+
+  .admin-doctor-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-doctor-input-group.full {
+    grid-column: auto;
+  }
+
+  .admin-doctor-submit-btn {
+    width: 100%;
+  }
+}
