@@ -239,3 +239,88 @@
     align-items: flex-start;
   }
 }
+
+.appointment-booking-card {
+  padding: 26px;
+  border-radius: 28px;
+  margin-bottom: 26px;
+}
+
+.appointment-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.appointment-form-group {
+  display: grid;
+  gap: 8px;
+}
+
+.appointment-form-group.full {
+  grid-column: 1 / -1;
+}
+
+.appointment-form-group label {
+  font-weight: 600;
+  color: var(--color-text-soft);
+}
+
+.appointment-form-group input,
+.appointment-form-group select,
+.appointment-form-group textarea {
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  outline: none;
+  font: inherit;
+}
+
+.appointment-form-group textarea {
+  min-height: 120px;
+  padding: 16px;
+  resize: vertical;
+}
+
+.appointment-message {
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+.appointment-message.error {
+  color: var(--color-danger);
+}
+
+.appointment-message.success {
+  color: var(--color-success);
+}
+
+.appointment-card-right {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+}
+
+.appointment-cancel-btn {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .appointment-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-form-group.full {
+    grid-column: auto;
+  }
+
+  .appointment-card-right {
+    width: 100%;
+  }
+
+  .appointment-cancel-btn {
+    width: 100%;
+  }
+}

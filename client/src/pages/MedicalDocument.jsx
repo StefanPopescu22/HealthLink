@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import {
-  FaArrowRight,
   FaDownload,
   FaFileLines,
   FaMagnifyingGlass,
@@ -7,116 +7,215 @@ import {
   FaTrash,
   FaUpload,
 } from "react-icons/fa6";
-import Footer from "../components/Footer";
-import "../styles/MedicalDocuments.css";
 import DashboardSidebar from "../components/DashboardSidebar";
+import Footer from "../components/Footer";
+import api from "../services/api";
+import "../styles/MedicalDocuments.css";
+
+const BACKEND_URL = "http://localhost:5000";
 
 function MedicalDocuments() {
-  const documents = [
-    {
-      title: "Cardiology Prescription",
-      category: "Prescription",
-      date: "March 10, 2026",
-      size: "1.2 MB",
-    },
-    {
-      title: "Hospital Discharge Summary",
-      category: "Medical Report",
-      date: "February 24, 2026",
-      size: "2.6 MB",
-    },
-    {
-      title: "Dermatology Consultation Notes",
-      category: "Consultation Document",
-      date: "January 18, 2026",
-      size: "850 KB",
-    },
-  ];
+  const [documents, setDocuments] = useState([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    file: null,
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const loadDocuments = async () => {
+    try {
+      const response = await api.get("/documents/my");
+      setDocuments(response.data);
+    } catch (err) {
+      setError("Failed to load documents.");
+    }
+  };
+
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+
+    if (name === "file") {
+      setFormData((prev) => ({
+        ...prev,
+        file: files[0] || null,
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const payload = new FormData();
+      payload.append("title", formData.title);
+      payload.append("category", formData.category);
+      payload.append("file", formData.file);
+
+      const response = await api.post("/documents", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setSuccess(response.data.message || "Document uploaded successfully.");
+      setFormData({ title: "", category: "", file: null });
+
+      const fileInput = document.getElementById("medical-document-file");
+      if (fileInput) fileInput.value = "";
+
+      await loadDocuments();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to upload document.");
+    }
+  };
+
+  const handleDelete = async (documentId) => {
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await api.delete(`/documents/${documentId}`);
+      setSuccess(response.data.message || "Document deleted successfully.");
+      await loadDocuments();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete document.");
+    }
+  };
 
   return (
-   <>
+    <>
       <main className="dashboard-screen">
         <div className="page-container dashboard-shell-grid">
           <DashboardSidebar />
 
           <div className="dashboard-page-content">
-            <div className="page-container">
-          <section className="documents-hero">
-            <div className="documents-hero-content">
-              <div className="documents-badge">
-                <FaShieldHeart />
-                <span>Protected medical file storage</span>
-              </div>
+            <section className="documents-page">
+              <section className="documents-hero">
+                <div className="documents-hero-content">
+                  <div className="documents-badge">
+                    <FaShieldHeart />
+                    <span>Protected medical file storage</span>
+                  </div>
 
-              <h1 className="documents-title">
-                Your <span className="gradient-text">medical documents</span>
-              </h1>
+                  <h1 className="documents-title">
+                    Your <span className="gradient-text">medical documents</span>
+                  </h1>
 
-              <p className="documents-subtitle">
-                Organize reports, prescriptions and consultation files in one secure
-                digital repository designed for fast access and structured management.
-              </p>
-            </div>
-
-            <div className="documents-side-card soft-card">
-              <div className="documents-search-box">
-                <FaMagnifyingGlass />
-                <input type="text" placeholder="Search documents" />
-              </div>
-
-              <button className="primary-btn documents-upload-btn">
-                <FaUpload />
-                Upload Document
-              </button>
-            </div>
-          </section>
-
-          <section className="documents-grid">
-            {documents.map((doc, index) => (
-              <article className="soft-card document-card" key={index}>
-                <div className="document-icon-box">
-                  <FaFileLines />
+                  <p className="documents-subtitle">
+                    Upload and manage real medical documents stored on your HealthLink backend.
+                  </p>
                 </div>
 
-                <div className="document-content">
-                  <h2>{doc.title}</h2>
-                  <p>{doc.category}</p>
-
-                  <div className="document-meta">
-                    <span>{doc.date}</span>
-                    <span>{doc.size}</span>
+                <div className="documents-side-card soft-card">
+                  <div className="documents-search-box">
+                    <FaMagnifyingGlass />
+                    <input type="text" placeholder="Documents are shown from live data" disabled />
                   </div>
                 </div>
+              </section>
 
-                <div className="document-actions">
-                  <button className="secondary-btn">
-                    <FaDownload />
-                    Download
-                  </button>
-                  <button className="secondary-btn danger-btn">
-                    <FaTrash />
-                    Delete
-                  </button>
-                </div>
-              </article>
-            ))}
-          </section>
+              <section className="soft-card documents-upload-form-card">
+                <h2>Upload New Document</h2>
+                <p>Add a real document file to your medical account.</p>
 
-          <section className="documents-cta soft-card">
-            <div>
-              <h2>Need structured healthcare storage?</h2>
-              <p>
-                Keep prescriptions, medical summaries and consultation files available
-                for future visits and doctor communication.
-              </p>
-            </div>
+                <form className="documents-upload-form" onSubmit={handleUpload}>
+                  <div className="documents-upload-group">
+                    <label>Title</label>
+                    <input
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      placeholder="Document title"
+                    />
+                  </div>
 
-            <button className="primary-btn">
-              Upload New File
-              <FaArrowRight />
-            </button>
-          </section>
-        </div>
+                  <div className="documents-upload-group">
+                    <label>Category</label>
+                    <input
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      placeholder="Example: Prescription, Medical Report"
+                    />
+                  </div>
+
+                  <div className="documents-upload-group full">
+                    <label>File</label>
+                    <input
+                      id="medical-document-file"
+                      name="file"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="documents-upload-group full">
+                    <button type="submit" className="primary-btn documents-upload-btn">
+                      <FaUpload />
+                      Upload Document
+                    </button>
+                  </div>
+                </form>
+
+                {error && <p className="documents-message error">{error}</p>}
+                {success && <p className="documents-message success">{success}</p>}
+              </section>
+
+              <section className="documents-grid">
+                {documents.length === 0 && <p>No uploaded documents yet.</p>}
+
+                {documents.map((doc) => (
+                  <article className="soft-card document-card" key={doc.id}>
+                    <div className="document-icon-box">
+                      <FaFileLines />
+                    </div>
+
+                    <div className="document-content">
+                      <h2>{doc.title}</h2>
+                      <p>{doc.category}</p>
+
+                      <div className="document-meta">
+                        <span>{doc.uploaded_at}</span>
+                        <span>{doc.file_name}</span>
+                      </div>
+                    </div>
+
+                    <div className="document-actions">
+                      <a
+                        href={`${BACKEND_URL}${doc.file_path}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="secondary-btn"
+                      >
+                        <FaDownload />
+                        Download
+                      </a>
+
+                      <button
+                        className="secondary-btn danger-btn"
+                        onClick={() => handleDelete(doc.id)}
+                      >
+                        <FaTrash />
+                        Delete
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            </section>
           </div>
         </div>
       </main>

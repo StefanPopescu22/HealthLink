@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   FaArrowRight,
   FaCalendarCheck,
@@ -13,51 +14,57 @@ import {
   FaUserDoctor,
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
+import api from "../services/api";
 import "../styles/ClinicProfile.css";
 
 function ClinicProfile() {
-  const services = [
-    "Cardiology Consultation",
-    "Internal Medicine",
-    "ECG & Heart Monitoring",
-    "Blood Tests",
-    "Dermatology Evaluation",
-    "Preventive Check-ups",
-  ];
+  const { id } = useParams();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const doctors = [
-    {
-      name: "Dr. Elena Popescu",
-      specialty: "Cardiology",
-      experience: "12 years experience",
-      rating: "4.9",
-    },
-    {
-      name: "Dr. Andrei Marinescu",
-      specialty: "Internal Medicine",
-      experience: "9 years experience",
-      rating: "4.8",
-    },
-    {
-      name: "Dr. Ioana Petrescu",
-      specialty: "Dermatology",
-      experience: "10 years experience",
-      rating: "4.9",
-    },
-  ];
+  useEffect(() => {
+    const loadClinic = async () => {
+      try {
+        const response = await api.get(`/public/clinics/${id}`);
+        setData(response.data);
+      } catch (err) {
+        setError("Failed to load clinic profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const reviews = [
-    {
-      name: "Maria Ionescu",
-      text: "Very modern clinic, fast appointment flow and clear communication from the staff.",
-      rating: "5.0",
-    },
-    {
-      name: "Alex Pop",
-      text: "Professional doctors, clean environment and a smooth digital patient experience.",
-      rating: "4.8",
-    },
-  ];
+    loadClinic();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <main className="clinic-profile-page">
+          <div className="page-container">
+            <p>Loading clinic profile...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <>
+        <main className="clinic-profile-page">
+          <div className="page-container">
+            <p>{error || "Clinic not found."}</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const { clinic, doctors, reviews } = data;
 
   return (
     <>
@@ -76,34 +83,32 @@ function ClinicProfile() {
                 </div>
 
                 <div>
-                  <h1>MedFuture Clinic</h1>
-                  <p>Cardiology · Internal Medicine · Diagnostics</p>
+                  <h1>{clinic.name}</h1>
+                  <p>{clinic.clinic_type}</p>
                 </div>
               </div>
 
               <div className="clinic-profile-meta">
                 <span>
                   <FaLocationDot />
-                  Bucharest, Romania
+                  {clinic.city || "City not set"}
                 </span>
                 <span>
                   <FaStar />
-                  4.9 rating
+                  {clinic.rating || "0.0"} rating
                 </span>
                 <span>
                   <FaUserDoctor />
-                  24 doctors
+                  {clinic.doctors_count || 0} doctors
                 </span>
               </div>
 
               <p className="clinic-profile-description">
-                MedFuture Clinic is a modern healthcare center focused on specialist care,
-                diagnostics and integrated digital services. Patients can book visits,
-                manage medical documents and receive coordinated treatment support in one place.
+                {clinic.description || "No description available for this clinic."}
               </p>
 
               <div className="clinic-profile-actions">
-                <Link to="/dashboard-patient" className="primary-btn">
+                <Link to="/appointments" className="primary-btn">
                   Book Appointment
                   <FaCalendarCheck />
                 </Link>
@@ -120,15 +125,15 @@ function ClinicProfile() {
                 <ul>
                   <li>
                     <FaPhone />
-                    <span>+40 700 111 222</span>
+                    <span>{clinic.phone || "No phone available"}</span>
                   </li>
                   <li>
                     <FaEnvelope />
-                    <span>contact@medfutureclinic.ro</span>
+                    <span>{clinic.email || "No email available"}</span>
                   </li>
                   <li>
                     <FaClock />
-                    <span>Mon - Fri · 08:00 - 18:00</span>
+                    <span>{clinic.address || "Address not set"}</span>
                   </li>
                 </ul>
               </div>
@@ -137,7 +142,7 @@ function ClinicProfile() {
                 <h3>Platform Highlights</h3>
                 <div className="clinic-highlight-item">
                   <strong>Fast Booking</strong>
-                  <span>Real-time appointment flow</span>
+                  <span>Integrated appointment flow</span>
                 </div>
                 <div className="clinic-highlight-item">
                   <strong>Digital Records</strong>
@@ -156,51 +161,30 @@ function ClinicProfile() {
               <article className="soft-card clinic-section-card">
                 <div className="clinic-section-header">
                   <div>
-                    <h2>Medical Services</h2>
-                    <p>Specialties and services currently available at this clinic.</p>
-                  </div>
-                </div>
-
-                <div className="clinic-services-grid">
-                  {services.map((service, index) => (
-                    <div className="clinic-service-pill" key={index}>
-                      <FaStethoscope />
-                      <span>{service}</span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="soft-card clinic-section-card">
-                <div className="clinic-section-header">
-                  <div>
                     <h2>Doctors in This Clinic</h2>
-                    <p>Meet the specialists available for booking.</p>
+                    <p>Real doctors linked to this clinic.</p>
                   </div>
                 </div>
 
                 <div className="clinic-doctors-list">
-                  {doctors.map((doctor, index) => (
-                    <div className="clinic-doctor-item" key={index}>
+                  {doctors.length === 0 && <p>No doctors available yet.</p>}
+
+                  {doctors.map((doctor) => (
+                    <div className="clinic-doctor-item" key={doctor.id}>
                       <div className="clinic-doctor-main">
                         <div className="clinic-doctor-avatar">
                           <FaUserDoctor />
                         </div>
 
                         <div>
-                          <h3>{doctor.name}</h3>
-                          <p>{doctor.specialty}</p>
-                          <span>{doctor.experience}</span>
+                          <h3>{doctor.first_name} {doctor.last_name}</h3>
+                          <p>{doctor.specialties || "No specialties assigned"}</p>
+                          <span>{doctor.experience_years || 0} years experience</span>
                         </div>
                       </div>
 
                       <div className="clinic-doctor-right">
-                        <div className="clinic-rating-badge">
-                          <FaStar />
-                          <span>{doctor.rating}</span>
-                        </div>
-
-                        <Link to="/doctor-profile" className="clinic-inline-link">
+                        <Link to={`/doctors/${doctor.id}`} className="clinic-inline-link">
                           View profile
                         </Link>
                       </div>
@@ -215,21 +199,23 @@ function ClinicProfile() {
                 <div className="clinic-section-header">
                   <div>
                     <h2>Patient Reviews</h2>
-                    <p>Recent feedback from visitors.</p>
+                    <p>Recent real feedback from users.</p>
                   </div>
                 </div>
 
                 <div className="clinic-reviews-list">
-                  {reviews.map((review, index) => (
-                    <div className="clinic-review-item" key={index}>
+                  {reviews.length === 0 && <p>No reviews available yet.</p>}
+
+                  {reviews.map((review) => (
+                    <div className="clinic-review-item" key={review.id}>
                       <div className="clinic-review-top">
-                        <strong>{review.name}</strong>
+                        <strong>{review.first_name} {review.last_name}</strong>
                         <span>
                           <FaStar />
                           {review.rating}
                         </span>
                       </div>
-                      <p>{review.text}</p>
+                      <p>{review.comment || "No comment provided."}</p>
                     </div>
                   ))}
                 </div>

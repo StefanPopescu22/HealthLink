@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   FaArrowRight,
   FaCalendarCheck,
@@ -11,29 +12,63 @@ import {
   FaUserDoctor,
 } from "react-icons/fa6";
 import Footer from "../components/Footer";
+import api from "../services/api";
 import "../styles/DoctorProfile.css";
 
 function DoctorProfile() {
-  const specialties = ["Cardiology", "Preventive Care", "Heart Monitoring", "Internal Medicine"];
-  const schedule = [
-    "Monday · 09:00 - 15:00",
-    "Tuesday · 10:00 - 17:00",
-    "Thursday · 09:00 - 14:00",
-    "Friday · 11:00 - 18:00",
-  ];
+  const { id } = useParams();
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const reviews = [
-    {
-      name: "Ana Radu",
-      rating: "5.0",
-      text: "Professional, calm and very clear in explaining the treatment plan.",
-    },
-    {
-      name: "Victor M.",
-      rating: "4.9",
-      text: "Excellent consultation experience and a very modern digital booking flow.",
-    },
-  ];
+  useEffect(() => {
+    const loadDoctor = async () => {
+      try {
+        const response = await api.get(`/public/doctors/${id}`);
+        setDoctor(response.data);
+      } catch (err) {
+        setError("Failed to load doctor profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDoctor();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <main className="doctor-profile-page">
+          <div className="page-container">
+            <p>Loading doctor profile...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !doctor) {
+    return (
+      <>
+        <main className="doctor-profile-page">
+          <div className="page-container">
+            <p>{error || "Doctor not found."}</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const specialties = doctor.specialties
+    ? doctor.specialties.split(",").map((item) => item.trim())
+    : [];
+
+  const schedule = doctor.schedule_info
+    ? doctor.schedule_info.split(",").map((item) => item.trim())
+    : [];
 
   return (
     <>
@@ -52,39 +87,37 @@ function DoctorProfile() {
                 </div>
 
                 <div>
-                  <h1>Dr. Elena Popescu</h1>
-                  <p>Cardiology Specialist</p>
+                  <h1>{doctor.first_name} {doctor.last_name}</h1>
+                  <p>{specialties[0] || "Medical Specialist"}</p>
                 </div>
               </div>
 
               <div className="doctor-meta-row">
                 <span>
                   <FaHospital />
-                  MedFuture Clinic
+                  {doctor.clinic_name}
                 </span>
                 <span>
                   <FaStar />
-                  4.9 rating
+                  {doctor.rating || "0.0"} rating
                 </span>
                 <span>
                   <FaGraduationCap />
-                  12 years experience
+                  {doctor.experience_years || 0} years experience
                 </span>
               </div>
 
               <p className="doctor-description">
-                Dr. Elena Popescu focuses on preventive cardiology, patient education and
-                integrated long-term cardiac care. She combines clinical expertise with a
-                clear, supportive and structured consultation approach.
+                {doctor.description || "No description available for this doctor."}
               </p>
 
               <div className="doctor-actions">
-                <Link to="/dashboard-patient" className="primary-btn">
+                <Link to="/appointments" className="primary-btn">
                   Book Consultation
                   <FaCalendarCheck />
                 </Link>
 
-                <Link to="/clinic-profile" className="secondary-btn">
+                <Link to={`/clinics/${doctor.clinic_id}`} className="secondary-btn">
                   View Clinic
                 </Link>
               </div>
@@ -94,6 +127,7 @@ function DoctorProfile() {
               <div className="doctor-side-card">
                 <h3>Availability</h3>
                 <div className="doctor-availability-list">
+                  {schedule.length === 0 && <p>No schedule info available.</p>}
                   {schedule.map((slot, index) => (
                     <div className="doctor-availability-item" key={index}>
                       <FaClock />
@@ -106,16 +140,16 @@ function DoctorProfile() {
               <div className="doctor-side-card">
                 <h3>Quick Facts</h3>
                 <div className="doctor-fact">
-                  <strong>Language</strong>
-                  <span>Romanian · English</span>
+                  <strong>Clinic</strong>
+                  <span>{doctor.clinic_name}</span>
                 </div>
                 <div className="doctor-fact">
-                  <strong>Consultation Type</strong>
-                  <span>In-person and follow-up guidance</span>
+                  <strong>City</strong>
+                  <span>{doctor.clinic_city || "Not set"}</span>
                 </div>
                 <div className="doctor-fact">
                   <strong>Main Focus</strong>
-                  <span>Preventive cardiology</span>
+                  <span>{specialties[0] || "General practice"}</span>
                 </div>
               </div>
             </div>
@@ -132,10 +166,7 @@ function DoctorProfile() {
                 </div>
 
                 <p className="doctor-long-text">
-                  With over a decade of clinical experience, Dr. Elena Popescu supports
-                  patients with structured evaluations, follow-up strategies and practical
-                  treatment guidance. Her workflow emphasizes digital accessibility,
-                  timely communication and well-documented medical decisions.
+                  {doctor.description || "No extended profile description is available yet."}
                 </p>
               </article>
 
@@ -148,6 +179,7 @@ function DoctorProfile() {
                 </div>
 
                 <div className="doctor-specialties-grid">
+                  {specialties.length === 0 && <p>No specialties assigned.</p>}
                   {specialties.map((item, index) => (
                     <div className="doctor-specialty-pill" key={index}>
                       <FaStethoscope />
@@ -159,30 +191,6 @@ function DoctorProfile() {
             </div>
 
             <div className="doctor-profile-right">
-              <article className="soft-card doctor-section-card">
-                <div className="doctor-section-header">
-                  <div>
-                    <h2>Patient Reviews</h2>
-                    <p>Recent feedback from consultations.</p>
-                  </div>
-                </div>
-
-                <div className="doctor-reviews-list">
-                  {reviews.map((review, index) => (
-                    <div className="doctor-review-item" key={index}>
-                      <div className="doctor-review-top">
-                        <strong>{review.name}</strong>
-                        <span>
-                          <FaStar />
-                          {review.rating}
-                        </span>
-                      </div>
-                      <p>{review.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
               <article className="soft-card doctor-cta-card">
                 <h2>Need a guided recommendation first?</h2>
                 <p>

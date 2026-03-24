@@ -37,39 +37,17 @@ function AppRouter() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/clinics" element={<Clinics />} />
+        <Route path="/clinics/:id" element={<ClinicProfile />} />
+
+        <Route path="/doctors" element={<Doctors />} />
+        <Route path="/doctors/:id" element={<DoctorProfile />} />
+
         <Route path="/clinic-profile" element={<ClinicProfile />} />
         <Route path="/doctor-profile" element={<DoctorProfile />} />
-        <Route path="/doctors" element={<Doctors />} />
+
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
-
-        <Route
-          path="/admin/create-clinic"
-          element={
-            <RoleProtectedRoute allowedRoles={["admin"]}>
-              <AdminCreateClinic />
-            </RoleProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/create-doctor"
-          element={
-            <RoleProtectedRoute allowedRoles={["admin"]}>
-              <AdminCreateDoctor />
-            </RoleProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/clinic/create-doctor"
-          element={
-            <RoleProtectedRoute allowedRoles={["clinic"]}>
-              <ClinicCreateDoctor />
-            </RoleProtectedRoute>
-          }
-        />
 
         <Route
           path="/dashboard-patient"
@@ -140,6 +118,33 @@ function AppRouter() {
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-clinic"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminCreateClinic />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/create-doctor"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminCreateDoctor />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/clinic/create-doctor"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>
+              <ClinicCreateDoctor />
+            </RoleProtectedRoute>
           }
         />
 
