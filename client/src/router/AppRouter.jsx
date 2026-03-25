@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ProtectedRoute from "../components/ProtectedRoute";
 import RoleProtectedRoute from "../components/RoleProtectedRoute";
-
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -25,6 +24,16 @@ import NotFound from "../pages/NotFound";
 import AdminCreateClinic from "../pages/AdminCreateClinic";
 import AdminCreateDoctor from "../pages/AdminCreateDoctor";
 import ClinicCreateDoctor from "../pages/ClinicCreateDoctor";
+import DoctorPatients from "../pages/DoctorPatients";
+import DoctorPatientDetails from "../pages/DoctorPatientDetails";
+import ClinicManageDoctors from "../pages/ClinicManageDoctors";
+import AdminUsers from "../pages/AdminUsers";
+import PatientFavorites from "../pages/PatientFavorites";
+import DoctorAppointments from "../pages/DoctorAppointments";
+import ClinicAppointments from "../pages/ClinicAppointments";
+import ClinicServices from "../pages/ClinicServices";
+import AdminServices from "../pages/AdminServices";
+import AdminSpecialties from "../pages/AdminSpecialties";
 
 function AppRouter() {
   return (
@@ -48,6 +57,96 @@ function AppRouter() {
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+        <Route
+          path="/doctor/appointments"
+          element={
+            <RoleProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorAppointments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/clinic/appointments"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>
+              <ClinicAppointments />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/clinic/services"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>
+              <ClinicServices />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/services"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminServices />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/specialties"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminSpecialties />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/favorites"
+          element={
+            <RoleProtectedRoute allowedRoles={["patient"]}>
+              <PatientFavorites />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/doctor/patients"
+          element={
+            <RoleProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorPatients />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/doctor/patients/:patientUserId"
+          element={
+            <RoleProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorPatientDetails />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/clinic/manage-doctors"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>
+              <ClinicManageDoctors />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminUsers />
+            </RoleProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard-patient"

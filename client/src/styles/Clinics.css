@@ -227,3 +227,58 @@
     width: 100%;
   }
 }
+
+.clinics-search-form {
+  padding: 22px;
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr auto;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.clinics-search-form input,
+.clinics-search-form select {
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  outline: none;
+  font: inherit;
+}
+
+.clinic-card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.favorite-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: white;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-soft);
+}
+
+.favorite-icon-btn.active {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+@media (max-width: 1024px) {
+  .clinics-search-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .clinics-search-form {
+    grid-template-columns: 1fr;
+  }
+}

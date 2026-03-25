@@ -1,42 +1,152 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   FaArrowRight,
   FaCalendarCheck,
   FaClock,
   FaEnvelope,
+  FaHeart,
   FaHospital,
   FaLocationDot,
   FaPhone,
   FaShieldHeart,
   FaStar,
-  FaStethoscope,
   FaUserDoctor,
 } from "react-icons/fa6";
+import { AuthContext } from "../context/AuthContext";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/ClinicProfile.css";
+import { validateReviewForm } from "../utils/formValidators";
 
 function ClinicProfile() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
+
   const [data, setData] = useState(null);
+  const [myReview, setMyReview] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: "5",
+    comment: "",
+  });
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const loadClinic = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.get(`/public/clinics/${id}`);
+      setData(response.data);
+    } catch (err) {
+      setError("Failed to load clinic profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPatientExtras = async () => {
+    if (!user || user.role !== "patient") return;
+
+    try {
+      const [favoritesRes, reviewRes] = await Promise.all([
+        api.get("/favorites/my"),
+        api.get(`/reviews/clinic/${id}/my`),
+      ]);
+
+      setIsFavorite(favoritesRes.data.some((item) => String(item.id) === String(id)));
+
+      if (reviewRes.data) {
+        setMyReview(reviewRes.data);
+        setReviewForm({
+          rating: String(reviewRes.data.rating),
+          comment: reviewRes.data.comment || "",
+        });
+      } else {
+        setMyReview(null);
+        setReviewForm({
+          rating: "5",
+          comment: "",
+        });
+      }
+    } catch {
+    }
+  };
+
   useEffect(() => {
-    const loadClinic = async () => {
+    loadClinic();
+  }, [id]);
+
+  useEffect(() => {
+    loadPatientExtras();
+  }, [user, id]);
+
+  const handleFavoriteToggle = async () => {
+    try {
+      if (isFavorite) {
+        await api.delete(`/favorites/${id}`);
+        setIsFavorite(false);
+      } else {
+        await api.post(`/favorites/${id}`);
+        setIsFavorite(true);
+      }
+    } catch {
+      setError("Failed to update favorite.");
+    }
+  };
+
+  const handleReviewChange = (e) => {
+    setReviewForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+      const handleReviewSubmit = async (e) => {
+      e.preventDefault();
+      setMessage("");
+      setError("");
+
+      const validationMessage = validateReviewForm(reviewForm);
+      if (validationMessage) {
+        setError(validationMessage);
+        return;
+      }
+
       try {
-        const response = await api.get(`/public/clinics/${id}`);
-        setData(response.data);
+        if (myReview) {
+          await api.put(`/reviews/${myReview.id}`, reviewForm);
+          setMessage("Review updated successfully.");
+        } else {
+          await api.post(`/reviews/clinic/${id}`, reviewForm);
+          setMessage("Review created successfully.");
+        }
+
+        await loadClinic();
+        await loadPatientExtras();
       } catch (err) {
-        setError("Failed to load clinic profile.");
-      } finally {
-        setLoading(false);
+        setError(err.response?.data?.message || "Failed to save review.");
       }
     };
 
-    loadClinic();
-  }, [id]);
+  const handleReviewDelete = async () => {
+    if (!myReview) return;
+
+    setMessage("");
+    setError("");
+
+    try {
+      await api.delete(`/reviews/${myReview.id}`);
+      setMessage("Review deleted successfully.");
+      await loadClinic();
+      await loadPatientExtras();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete review.");
+    }
+  };
 
   if (loading) {
     return (
@@ -113,9 +223,16 @@ function ClinicProfile() {
                   <FaCalendarCheck />
                 </Link>
 
-                <Link to="/clinics" className="secondary-btn">
-                  Back to Clinics
-                </Link>
+                {user?.role === "patient" && (
+                  <button
+                    type="button"
+                    className={`secondary-btn clinic-favorite-btn ${isFavorite ? "active" : ""}`}
+                    onClick={handleFavoriteToggle}
+                  >
+                    <FaHeart />
+                    {isFavorite ? "Saved" : "Save Clinic"}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -137,24 +254,50 @@ function ClinicProfile() {
                   </li>
                 </ul>
               </div>
-
-              <div className="clinic-side-card">
-                <h3>Platform Highlights</h3>
-                <div className="clinic-highlight-item">
-                  <strong>Fast Booking</strong>
-                  <span>Integrated appointment flow</span>
-                </div>
-                <div className="clinic-highlight-item">
-                  <strong>Digital Records</strong>
-                  <span>Documents and analyses in one place</span>
-                </div>
-                <div className="clinic-highlight-item">
-                  <strong>AI Guidance</strong>
-                  <span>Symptom-based specialty suggestions</span>
-                </div>
-              </div>
             </div>
           </section>
+
+          {user?.role === "patient" && (
+            <section className="soft-card clinic-review-form-card">
+              <h2>{myReview ? "Edit Your Review" : "Leave a Review"}</h2>
+
+              <form className="clinic-review-form" onSubmit={handleReviewSubmit}>
+                <select name="rating" value={reviewForm.rating} onChange={handleReviewChange}>
+                  <option value="5">5 stars</option>
+                  <option value="4">4 stars</option>
+                  <option value="3">3 stars</option>
+                  <option value="2">2 stars</option>
+                  <option value="1">1 star</option>
+                </select>
+
+                <textarea
+                  name="comment"
+                  value={reviewForm.comment}
+                  onChange={handleReviewChange}
+                  placeholder="Write your review"
+                />
+
+                <div className="clinic-review-form-actions">
+                  <button type="submit" className="primary-btn">
+                    {myReview ? "Update Review" : "Submit Review"}
+                  </button>
+
+                  {myReview && (
+                    <button
+                      type="button"
+                      className="secondary-btn"
+                      onClick={handleReviewDelete}
+                    >
+                      Delete Review
+                    </button>
+                  )}
+                </div>
+              </form>
+
+              {message && <p className="clinic-review-message success">{message}</p>}
+              {error && <p className="clinic-review-message error">{error}</p>}
+            </section>
+          )}
 
           <section className="clinic-profile-content">
             <div className="clinic-profile-left">
@@ -199,7 +342,7 @@ function ClinicProfile() {
                 <div className="clinic-section-header">
                   <div>
                     <h2>Patient Reviews</h2>
-                    <p>Recent real feedback from users.</p>
+                    <p>Real feedback from users.</p>
                   </div>
                 </div>
 
@@ -224,12 +367,11 @@ function ClinicProfile() {
               <article className="soft-card clinic-cta-card">
                 <h2>Need help choosing a specialty?</h2>
                 <p>
-                  Use the AI Assistant to describe symptoms and receive a guided clinic
-                  or specialist recommendation.
+                  Use the AI Assistant later, after the rest of the platform is finalized.
                 </p>
 
-                <Link to="/chatbot" className="primary-btn">
-                  Open AI Assistant
+                <Link to="/specialties" className="primary-btn">
+                  Browse Specialties
                   <FaArrowRight />
                 </Link>
               </article>

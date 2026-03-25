@@ -1,8 +1,9 @@
 const db = require("../config/db");
 
-const listPublicClinics = async () => {
-  const [rows] = await db.execute(
-    `
+const listPublicClinics = async (filters = {}) => {
+  const { q, city, specialty, minRating, sort } = filters;
+
+  let sql = `
     SELECT
       c.id,
       c.name,
@@ -19,11 +20,50 @@ const listPublicClinics = async () => {
     LEFT JOIN doctors d ON d.clinic_id = c.id
     LEFT JOIN reviews r ON r.clinic_id = c.id
     WHERE c.approved = 1
-    GROUP BY c.id
-    ORDER BY c.name ASC
-    `
-  );
+  `;
 
+  const params = [];
+
+  if (q) {
+    sql += ` AND (c.name LIKE ? OR c.description LIKE ?) `;
+    params.push(`%${q}%`, `%${q}%`);
+  }
+
+  if (city) {
+    sql += ` AND c.city LIKE ? `;
+    params.push(`%${city}%`);
+  }
+
+  if (specialty) {
+    sql += `
+      AND EXISTS (
+        SELECT 1
+        FROM doctors d2
+        LEFT JOIN doctor_specialties ds2 ON ds2.doctor_id = d2.id
+        LEFT JOIN specialties s2 ON s2.id = ds2.specialty_id
+        WHERE d2.clinic_id = c.id
+          AND s2.name LIKE ?
+      )
+    `;
+    params.push(`%${specialty}%`);
+  }
+
+  sql += ` GROUP BY c.id `;
+
+  if (minRating) {
+    sql += ` HAVING COALESCE(ROUND(AVG(r.rating), 1), 0) >= ? `;
+    params.push(Number(minRating));
+  }
+
+  if (sort === "rating") {
+    sql += ` ORDER BY rating DESC, c.name ASC `;
+  } else if (sort === "doctors") {
+    sql += ` ORDER BY doctors_count DESC, c.name ASC `;
+  } else {
+    sql += ` ORDER BY c.name ASC `;
+  }
+
+  const [rows] = await db.query(sql, params);
   return rows;
 };
 
@@ -89,13 +129,13 @@ const getClinicReviews = async (clinicId) => {
       r.comment,
       r.rating,
       r.created_at,
+      r.updated_at,
       u.first_name,
       u.last_name
     FROM reviews r
     INNER JOIN users u ON u.id = r.user_id
     WHERE r.clinic_id = ?
-    ORDER BY r.created_at DESC
-    LIMIT 10
+    ORDER BY r.updated_at DESC, r.created_at DESC
     `,
     [clinicId]
   );
@@ -103,9 +143,10 @@ const getClinicReviews = async (clinicId) => {
   return rows;
 };
 
-const listPublicDoctors = async () => {
-  const [rows] = await db.execute(
-    `
+const listPublicDoctors = async (filters = {}) => {
+  const { q, specialty, clinicId } = filters;
+
+  let sql = `
     SELECT
       d.id,
       d.first_name,
@@ -125,11 +166,39 @@ const listPublicDoctors = async () => {
     LEFT JOIN doctor_specialties ds ON ds.doctor_id = d.id
     LEFT JOIN specialties s ON s.id = ds.specialty_id
     LEFT JOIN reviews r ON r.clinic_id = c.id
-    GROUP BY d.id
-    ORDER BY d.first_name, d.last_name
-    `
-  );
+    WHERE 1 = 1
+  `;
 
+  const params = [];
+
+  if (q) {
+    sql += `
+      AND (
+        d.first_name LIKE ?
+        OR d.last_name LIKE ?
+        OR c.name LIKE ?
+        OR d.description LIKE ?
+      )
+    `;
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+  }
+
+  if (specialty) {
+    sql += ` AND s.name LIKE ? `;
+    params.push(`%${specialty}%`);
+  }
+
+  if (clinicId) {
+    sql += ` AND c.id = ? `;
+    params.push(Number(clinicId));
+  }
+
+  sql += `
+    GROUP BY d.id
+    ORDER BY d.first_name ASC, d.last_name ASC
+  `;
+
+  const [rows] = await db.query(sql, params);
   return rows;
 };
 
@@ -166,6 +235,55 @@ const getPublicDoctorById = async (doctorId) => {
   return rows[0];
 };
 
+const listPublicServices = async (filters = {}) => {
+  const { q, category, clinicId } = filters;
+
+  let sql = `
+    SELECT
+      s.id,
+      s.name,
+      s.category,
+      s.description,
+      s.duration_minutes,
+      COUNT(DISTINCT cs.clinic_id) AS clinics_count,
+      MIN(cs.price) AS starting_price
+    FROM services s
+    LEFT JOIN clinic_services cs ON cs.service_id = s.id
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  if (q) {
+    sql += ` AND (s.name LIKE ? OR s.description LIKE ?) `;
+    params.push(`%${q}%`, `%${q}%`);
+  }
+
+  if (category) {
+    sql += ` AND s.category LIKE ? `;
+    params.push(`%${category}%`);
+  }
+
+  if (clinicId) {
+    sql += `
+      AND EXISTS (
+        SELECT 1
+        FROM clinic_services cs2
+        WHERE cs2.service_id = s.id AND cs2.clinic_id = ?
+      )
+    `;
+    params.push(Number(clinicId));
+  }
+
+  sql += `
+    GROUP BY s.id
+    ORDER BY s.name ASC
+  `;
+
+  const [rows] = await db.query(sql, params);
+  return rows;
+};
+
 module.exports = {
   listPublicClinics,
   getPublicClinicById,
@@ -173,4 +291,5 @@ module.exports = {
   getClinicReviews,
   listPublicDoctors,
   getPublicDoctorById,
+  listPublicServices,
 };

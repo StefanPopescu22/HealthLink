@@ -5,11 +5,12 @@ const {
   getClinicReviews,
   listPublicDoctors,
   getPublicDoctorById,
+  listPublicServices,
 } = require("../models/publicModel");
 
 const getClinics = async (req, res) => {
   try {
-    const clinics = await listPublicClinics();
+    const clinics = await listPublicClinics(req.query);
     return res.status(200).json(clinics);
   } catch (error) {
     return res.status(500).json({
@@ -48,7 +49,7 @@ const getClinicById = async (req, res) => {
 
 const getDoctors = async (req, res) => {
   try {
-    const doctors = await listPublicDoctors();
+    const doctors = await listPublicDoctors(req.query);
     return res.status(200).json(doctors);
   } catch (error) {
     return res.status(500).json({
@@ -78,9 +79,22 @@ const getDoctorById = async (req, res) => {
   }
 };
 
+const getServices = async (req, res) => {
+  try {
+    const services = await listPublicServices(req.query);
+    return res.status(200).json(services);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to load services.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getClinics,
   getClinicById,
   getDoctors,
   getDoctorById,
+  getServices,
 };

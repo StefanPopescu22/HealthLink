@@ -174,3 +174,34 @@
     width: 100%;
   }
 }
+
+.doctors-search-toolbar {
+  padding: 22px;
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr auto;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.doctor-filter-input {
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid var(--color-border);
+  outline: none;
+  font: inherit;
+}
+
+@media (max-width: 1024px) {
+  .doctors-search-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .doctors-search-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,59 @@
+.admin-users-page {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-users-header,
+.admin-users-table-wrapper {
+  padding: 26px;
+  border-radius: 28px;
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.admin-users-message.error {
+  color: var(--color-danger);
+}
+
+.admin-users-message.success {
+  color: var(--color-success);
+}
+
+/* NEW: Layout for the two buttons */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* NEW: Basic danger button styling (tweak to match your design system) */
+.danger-btn {
+  background-color: var(--color-danger, #ff4d4f);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px; /* Adjust radius to match secondary-btn */
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.danger-btn:hover {
+  background-color: #d9363e;
+}
+
+@media (max-width: 768px) {
+  .admin-users-table-wrapper {
+    overflow-x: auto;
+  }
+}

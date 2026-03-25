@@ -12,6 +12,7 @@ import {
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
+import { validateAppointmentForm } from "../utils/formValidators";
 import "../styles/Appointments.css";
 
 function Appointments() {
@@ -25,10 +26,15 @@ function Appointments() {
     appointmentTime: "",
     notes: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const loadData = async () => {
+    setLoading(true);
+    setError("");
+
     try {
       const [appointmentsRes, clinicsRes, doctorsRes] = await Promise.all([
         api.get("/appointments/my"),
@@ -41,6 +47,8 @@ function Appointments() {
       setDoctors(doctorsRes.data);
     } catch (err) {
       setError("Failed to load appointments data.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,6 +92,14 @@ function Appointments() {
     setError("");
     setSuccess("");
 
+    const validationMessage = validateAppointmentForm(formData);
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
       const response = await api.post("/appointments", formData);
       setSuccess(response.data.message || "Appointment created successfully.");
@@ -99,6 +115,8 @@ function Appointments() {
       await loadData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create appointment.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -194,7 +212,12 @@ function Appointments() {
 
                   <div className="appointment-form-group">
                     <label>Doctor</label>
-                    <select name="doctorId" value={formData.doctorId} onChange={handleChange}>
+                    <select
+                      name="doctorId"
+                      value={formData.doctorId}
+                      onChange={handleChange}
+                      disabled={!formData.clinicId}
+                    >
                       <option value="">Select doctor</option>
                       {filteredDoctors.map((doctor) => (
                         <option key={doctor.id} value={doctor.id}>
@@ -209,6 +232,7 @@ function Appointments() {
                     <input
                       type="date"
                       name="appointmentDate"
+                      min={new Date().toISOString().split("T")[0]}
                       value={formData.appointmentDate}
                       onChange={handleChange}
                     />
@@ -235,8 +259,8 @@ function Appointments() {
                   </div>
 
                   <div className="appointment-form-group full">
-                    <button type="submit" className="primary-btn">
-                      Create Appointment
+                    <button type="submit" className="primary-btn" disabled={submitting}>
+                      {submitting ? "Creating..." : "Create Appointment"}
                       <FaArrowRight />
                     </button>
                   </div>
@@ -247,118 +271,126 @@ function Appointments() {
               </section>
 
               <section className="appointments-filter-row">
-                <button className="appointments-filter active">
+                <button className="appointments-filter active" type="button">
                   <FaFilter />
                   <span>Live Data</span>
                 </button>
               </section>
 
-              <section className="appointments-content">
-                <div className="appointments-column">
-                  <div className="appointments-section-heading">
-                    <h2>Upcoming Appointments</h2>
-                    <p>Your pending and confirmed real appointments.</p>
-                  </div>
+              {loading ? (
+                <div className="soft-card empty-state-card">Loading appointments...</div>
+              ) : (
+                <section className="appointments-content">
+                  <div className="appointments-column">
+                    <div className="appointments-section-heading">
+                      <h2>Upcoming Appointments</h2>
+                      <p>Your pending and confirmed real appointments.</p>
+                    </div>
 
-                  <div className="appointments-list">
-                    {upcomingAppointments.length === 0 && <p>No upcoming appointments yet.</p>}
+                    <div className="appointments-list">
+                      {upcomingAppointments.length === 0 && (
+                        <div className="soft-card empty-state-card">No upcoming appointments yet.</div>
+                      )}
 
-                    {upcomingAppointments.map((item) => (
-                      <article className="soft-card appointment-card" key={item.id}>
-                        <div className="appointment-main">
-                          <div className="appointment-icon">
-                            <FaUserDoctor />
-                          </div>
+                      {upcomingAppointments.map((item) => (
+                        <article className="soft-card appointment-card" key={item.id}>
+                          <div className="appointment-main">
+                            <div className="appointment-icon">
+                              <FaUserDoctor />
+                            </div>
 
-                          <div className="appointment-content">
-                            <h3>
-                              Dr. {item.doctor_first_name} {item.doctor_last_name}
-                            </h3>
-                            <p>{item.clinic_name}</p>
+                            <div className="appointment-content">
+                              <h3>
+                                Dr. {item.doctor_first_name} {item.doctor_last_name}
+                              </h3>
+                              <p>{item.clinic_name}</p>
 
-                            <div className="appointment-meta">
-                              <span>
-                                <FaLocationDot />
-                                {item.clinic_name}
-                              </span>
-                              <span>
-                                <FaCalendarCheck />
-                                {item.appointment_date}
-                              </span>
-                              <span>
-                                <FaClock />
-                                {item.appointment_time}
-                              </span>
+                              <div className="appointment-meta">
+                                <span>
+                                  <FaLocationDot />
+                                  {item.clinic_name}
+                                </span>
+                                <span>
+                                  <FaCalendarCheck />
+                                  {item.appointment_date}
+                                </span>
+                                <span>
+                                  <FaClock />
+                                  {item.appointment_time}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="appointment-card-right">
-                          <div className={`appointment-status ${item.status.toLowerCase()}`}>
+                          <div className="appointment-card-right">
+                            <div className={`status-badge ${item.status.toLowerCase()}`}>
+                              {item.status}
+                            </div>
+
+                            {item.status !== "cancelled" && item.status !== "completed" && (
+                              <button
+                                className="secondary-btn appointment-cancel-btn"
+                                onClick={() => handleCancelAppointment(item.id)}
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="appointments-column">
+                    <div className="appointments-section-heading">
+                      <h2>Appointment History</h2>
+                      <p>Your completed and cancelled consultations.</p>
+                    </div>
+
+                    <div className="appointments-list">
+                      {historyAppointments.length === 0 && (
+                        <div className="soft-card empty-state-card">No appointment history yet.</div>
+                      )}
+
+                      {historyAppointments.map((item) => (
+                        <article className="soft-card appointment-card" key={item.id}>
+                          <div className="appointment-main">
+                            <div className="appointment-icon">
+                              <FaUserDoctor />
+                            </div>
+
+                            <div className="appointment-content">
+                              <h3>
+                                Dr. {item.doctor_first_name} {item.doctor_last_name}
+                              </h3>
+                              <p>{item.clinic_name}</p>
+
+                              <div className="appointment-meta">
+                                <span>
+                                  <FaLocationDot />
+                                  {item.clinic_name}
+                                </span>
+                                <span>
+                                  <FaCalendarCheck />
+                                  {item.appointment_date}
+                                </span>
+                                <span>
+                                  <FaClock />
+                                  {item.appointment_time}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className={`status-badge ${item.status.toLowerCase()}`}>
                             {item.status}
                           </div>
-
-                          {item.status !== "cancelled" && item.status !== "completed" && (
-                            <button
-                              className="secondary-btn appointment-cancel-btn"
-                              onClick={() => handleCancelAppointment(item.id)}
-                            >
-                              Cancel
-                            </button>
-                          )}
-                        </div>
-                      </article>
-                    ))}
+                        </article>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div className="appointments-column">
-                  <div className="appointments-section-heading">
-                    <h2>Appointment History</h2>
-                    <p>Your completed and cancelled consultations.</p>
-                  </div>
-
-                  <div className="appointments-list">
-                    {historyAppointments.length === 0 && <p>No appointment history yet.</p>}
-
-                    {historyAppointments.map((item) => (
-                      <article className="soft-card appointment-card" key={item.id}>
-                        <div className="appointment-main">
-                          <div className="appointment-icon">
-                            <FaUserDoctor />
-                          </div>
-
-                          <div className="appointment-content">
-                            <h3>
-                              Dr. {item.doctor_first_name} {item.doctor_last_name}
-                            </h3>
-                            <p>{item.clinic_name}</p>
-
-                            <div className="appointment-meta">
-                              <span>
-                                <FaLocationDot />
-                                {item.clinic_name}
-                              </span>
-                              <span>
-                                <FaCalendarCheck />
-                                {item.appointment_date}
-                              </span>
-                              <span>
-                                <FaClock />
-                                {item.appointment_time}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className={`appointment-status ${item.status.toLowerCase()}`}>
-                          {item.status}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </section>
+                </section>
+              )}
             </section>
           </div>
         </div>

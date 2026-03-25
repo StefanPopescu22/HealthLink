@@ -1,0 +1,63 @@
+.doctor-patients-page {
+  display: grid;
+  gap: 22px;
+}
+
+.doctor-patients-header {
+  padding: 26px;
+  border-radius: 28px;
+}
+
+.doctor-patients-header h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.doctor-patients-header p {
+  color: var(--color-text-soft);
+}
+
+.doctor-patients-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.doctor-patient-card {
+  padding: 24px;
+  border-radius: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.doctor-patient-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--gradient-soft);
+  color: var(--color-primary);
+  font-size: 1.2rem;
+}
+
+.doctor-patient-card h3 {
+  font-size: 1.2rem;
+}
+
+.doctor-patient-card p,
+.doctor-patient-card span {
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 1024px) {
+  .doctor-patients-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .doctor-patients-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaArrowRight,
@@ -12,46 +13,69 @@ import {
 } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
+import api from "../services/api";
 import "../styles/AdminPanel.css";
 
 function AdminPanel() {
-  const stats = [
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await api.get("/admin/dashboard");
+        setData(response.data);
+      } catch (err) {
+        setError("Failed to load admin dashboard.");
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (!data) {
+    return (
+      <>
+        <main className="dashboard-screen">
+          <div className="page-container dashboard-shell-grid">
+            <DashboardSidebar />
+            <div className="dashboard-page-content">
+              <p>{error || "Loading admin dashboard..."}</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const { stats, latestClinics, latestDoctors, usersByRole } = data;
+
+  const statsCards = [
     {
       icon: <FaUserGroup />,
-      value: "1,248",
+      value: String(stats.registeredUsers),
       label: "Registered Users",
-      trend: "+86 this month",
+      trend: "Live total",
     },
     {
       icon: <FaHospital />,
-      value: "72",
+      value: String(stats.clinicsCount),
       label: "Clinics in Platform",
-      trend: "5 awaiting approval",
+      trend: "Real clinics",
     },
     {
       icon: <FaUserDoctor />,
-      value: "218",
+      value: String(stats.doctorsCount),
       label: "Doctors Registered",
-      trend: "12 new entries",
+      trend: "Live doctor count",
     },
     {
       icon: <FaStar />,
-      value: "4.8",
+      value: String(stats.avgRating),
       label: "Average Platform Rating",
-      trend: "Positive trend",
+      trend: "From reviews",
     },
-  ];
-
-  const approvals = [
-    { clinic: "NorthCare Medical Center", city: "Bucharest", status: "Pending Approval" },
-    { clinic: "Prime Women Health", city: "Cluj-Napoca", status: "Pending Approval" },
-    { clinic: "Bright Dental Studio", city: "Iași", status: "Pending Approval" },
-  ];
-
-  const moderation = [
-    { item: "Clinic review flagged for verification", area: "Reviews", priority: "High" },
-    { item: "Doctor profile details missing validation", area: "Doctors", priority: "Medium" },
-    { item: "Service category requires mapping", area: "Services", priority: "Low" },
   ];
 
   const actions = [
@@ -69,8 +93,8 @@ function AdminPanel() {
     },
     {
       icon: <FaChartLine />,
-      title: "Monitor System",
-      text: "Track platform health, engagement and moderation metrics.",
+      title: "Review Platform",
+      text: "Monitor the live statistics of the healthcare platform.",
       link: "/admin",
     },
   ];
@@ -95,8 +119,7 @@ function AdminPanel() {
                   </h1>
 
                   <p className="admin-subtitle">
-                    Oversee users, clinics, approvals, moderation and key health platform
-                    indicators from one centralized management interface.
+                    Review real platform metrics, recent clinics and recent doctors from one centralized management interface.
                   </p>
 
                   <div className="admin-actions">
@@ -118,28 +141,18 @@ function AdminPanel() {
                   </div>
 
                   <div className="admin-overview-grid">
-                    <div className="admin-overview-item">
-                      <strong>Pending Approvals</strong>
-                      <span>5 clinics</span>
-                    </div>
-                    <div className="admin-overview-item">
-                      <strong>Flagged Reviews</strong>
-                      <span>3 items</span>
-                    </div>
-                    <div className="admin-overview-item">
-                      <strong>System Health</strong>
-                      <span>98% uptime</span>
-                    </div>
-                    <div className="admin-overview-item">
-                      <strong>Moderation Queue</strong>
-                      <span>Active</span>
-                    </div>
+                    {usersByRole.map((item) => (
+                      <div className="admin-overview-item" key={item.role}>
+                        <strong>{item.role}</strong>
+                        <span>{item.total} accounts</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </section>
 
               <section className="admin-stats-grid">
-                {stats.map((item, index) => (
+                {statsCards.map((item, index) => (
                   <article className="admin-stat-card soft-card" key={index}>
                     <div className="admin-stat-top">
                       <div className="icon-box">{item.icon}</div>
@@ -156,19 +169,23 @@ function AdminPanel() {
                   <article className="soft-card admin-section-card">
                     <div className="admin-section-header">
                       <div>
-                        <h2>Clinic Approval Queue</h2>
-                        <p>Medical providers waiting for validation.</p>
+                        <h2>Latest Clinics</h2>
+                        <p>Most recent clinics created on the platform.</p>
                       </div>
                     </div>
 
                     <div className="admin-approval-list">
-                      {approvals.map((item, index) => (
-                        <div className="admin-approval-item" key={index}>
+                      {latestClinics.length === 0 && <p>No clinics available yet.</p>}
+
+                      {latestClinics.map((item) => (
+                        <div className="admin-approval-item" key={item.id}>
                           <div>
-                            <h3>{item.clinic}</h3>
-                            <p>{item.city}</p>
+                            <h3>{item.name}</h3>
+                            <p>{item.city || "City not set"}</p>
                           </div>
-                          <div className="admin-pill warning">{item.status}</div>
+                          <div className="admin-pill warning">
+                            {item.approved ? "Approved" : "Pending"}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -177,18 +194,20 @@ function AdminPanel() {
                   <article className="soft-card admin-section-card">
                     <div className="admin-section-header">
                       <div>
-                        <h2>Moderation Queue</h2>
-                        <p>Items requiring review from the admin team.</p>
+                        <h2>Latest Doctors</h2>
+                        <p>Most recent doctors created on the platform.</p>
                       </div>
                     </div>
 
                     <div className="admin-moderation-list">
-                      {moderation.map((item, index) => (
-                        <div className="admin-moderation-item" key={index}>
-                          <h3>{item.item}</h3>
-                          <p>{item.area}</p>
-                          <span className={`admin-priority ${item.priority.toLowerCase()}`}>
-                            {item.priority}
+                      {latestDoctors.length === 0 && <p>No doctors available yet.</p>}
+
+                      {latestDoctors.map((item) => (
+                        <div className="admin-moderation-item" key={item.id}>
+                          <h3>{item.first_name} {item.last_name}</h3>
+                          <p>{item.clinic_name}</p>
+                          <span className="admin-priority low">
+                            {item.experience_years || 0} years experience
                           </span>
                         </div>
                       ))}
@@ -207,16 +226,16 @@ function AdminPanel() {
 
                     <div className="admin-progress-ring">
                       <div className="admin-progress-inner">
-                        <strong>98%</strong>
-                        <span>Platform stability</span>
+                        <strong>{stats.avgRating}</strong>
+                        <span>Average rating</span>
                       </div>
                     </div>
 
                     <ul className="admin-check-list">
-                      <li>Approvals monitored</li>
-                      <li>Moderation active</li>
-                      <li>Roles validated</li>
-                      <li>Analytics available</li>
+                      <li>Real user count loaded</li>
+                      <li>Real clinics loaded</li>
+                      <li>Real doctors loaded</li>
+                      <li>Platform overview active</li>
                     </ul>
                   </article>
 
@@ -227,13 +246,13 @@ function AdminPanel() {
                       </div>
                       <div>
                         <h2>Governance Tools</h2>
-                        <p>Role control, moderation and trust signals.</p>
+                        <p>Role control and account creation flows.</p>
                       </div>
                     </div>
 
                     <div className="admin-security-tags">
                       <span><FaUserGroup /> Role Review</span>
-                      <span><FaClipboardCheck /> Clinic Validation</span>
+                      <span><FaClipboardCheck /> Account Creation</span>
                     </div>
 
                     <Link to="/admin/create-doctor" className="primary-btn admin-security-btn">

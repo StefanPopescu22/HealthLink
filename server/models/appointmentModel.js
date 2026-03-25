@@ -1,56 +1,154 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const db = require("../config/db");
 
-const ensureDirectory = (folderPath) => {
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-  }
+const createAppointment = async ({
+  patientUserId,
+  clinicId,
+  doctorId,
+  appointmentDate,
+  appointmentTime,
+  notes,
+}) => {
+  const [result] = await db.execute(
+    `
+    INSERT INTO appointments
+    (patient_user_id, clinic_id, doctor_id, appointment_date, appointment_time, notes)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      patientUserId,
+      clinicId,
+      doctorId,
+      appointmentDate,
+      appointmentTime,
+      notes || null,
+    ]
+  );
+
+  return result.insertId;
 };
 
-const createStorage = (subFolder) => {
-  const uploadFolder = path.join(__dirname, "..", "uploads", subFolder);
-  ensureDirectory(uploadFolder);
+const getAppointmentsByPatient = async (patientUserId) => {
+  const [rows] = await db.execute(
+    `
+    SELECT
+      a.id,
+      a.appointment_date,
+      a.appointment_time,
+      a.status,
+      a.notes,
+      a.created_at,
+      c.id AS clinic_id,
+      c.name AS clinic_name,
+      d.id AS doctor_id,
+      d.first_name AS doctor_first_name,
+      d.last_name AS doctor_last_name
+    FROM appointments a
+    INNER JOIN clinics c ON c.id = a.clinic_id
+    INNER JOIN doctors d ON d.id = a.doctor_id
+    WHERE a.patient_user_id = ?
+    ORDER BY a.appointment_date DESC, a.appointment_time DESC
+    `,
+    [patientUserId]
+  );
 
-  return multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadFolder);
-    },
-    filename: (req, file, cb) => {
-      const safeName = file.originalname.replace(/\s+/g, "_");
-      cb(null, `${Date.now()}-${safeName}`);
-    },
-  });
+  return rows;
 };
 
-const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/jpg",
-  ];
+const getAppointmentById = async (appointmentId) => {
+  const [rows] = await db.execute(
+    `
+    SELECT *
+    FROM appointments
+    WHERE id = ?
+    `,
+    [appointmentId]
+  );
 
-  if (!allowedMimeTypes.includes(file.mimetype)) {
-    return cb(new Error("Only PDF, JPG and PNG files are allowed."));
-  }
-
-  cb(null, true);
+  return rows[0];
 };
 
-const documentUpload = multer({
-  storage: createStorage("documents"),
-  fileFilter,
-  limits: { fileSize: 20 * 1024 * 1024 },
-});
+const cancelAppointment = async (appointmentId) => {
+  await db.execute(
+    `
+    UPDATE appointments
+    SET status = 'cancelled'
+    WHERE id = ?
+    `,
+    [appointmentId]
+  );
+};
 
-const analysisUpload = multer({
-  storage: createStorage("analyses"),
-  fileFilter,
-  limits: { fileSize: 20 * 1024 * 1024 },
-});
+const getClinicForAppointment = async (clinicId) => {
+  const [rows] = await db.execute(
+    `
+    SELECT id, name, approved
+    FROM clinics
+    WHERE id = ?
+    `,
+    [clinicId]
+  );
+
+  return rows[0];
+};
+
+const getDoctorForAppointment = async (doctorId) => {
+  const [rows] = await db.execute(
+    `
+    SELECT id, clinic_id, first_name, last_name
+    FROM doctors
+    WHERE id = ?
+    `,
+    [doctorId]
+  );
+
+  return rows[0];
+};
+
+const hasDoctorSlotConflict = async ({ doctorId, appointmentDate, appointmentTime }) => {
+  const [rows] = await db.execute(
+    `
+    SELECT COUNT(*) AS total
+    FROM appointments
+    WHERE doctor_id = ?
+      AND appointment_date = ?
+      AND appointment_time = ?
+      AND status IN ('pending', 'confirmed')
+    `,
+    [doctorId, appointmentDate, appointmentTime]
+  );
+
+  return rows[0]?.total > 0;
+};
+
+const hasPatientDuplicateAppointment = async ({
+  patientUserId,
+  doctorId,
+  appointmentDate,
+  appointmentTime,
+}) => {
+  const [rows] = await db.execute(
+    `
+    SELECT COUNT(*) AS total
+    FROM appointments
+    WHERE patient_user_id = ?
+      AND doctor_id = ?
+      AND appointment_date = ?
+      AND appointment_time = ?
+      AND status IN ('pending', 'confirmed')
+    `,
+    [patientUserId, doctorId, appointmentDate, appointmentTime]
+  );
+
+  return rows[0]?.total > 0;
+};
 
 module.exports = {
-  documentUpload,
-  analysisUpload,
+  createAppointment,
+  getAppointmentsByPatient,
+  getAppointmentById,
+  cancelAppointment,
+  getClinicForAppointment,
+  getDoctorForAppointment,
+  hasDoctorSlotConflict,
+  hasPatientDuplicateAppointment,
 };

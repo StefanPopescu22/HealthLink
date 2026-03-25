@@ -1,36 +1,91 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaCalendarCheck,
   FaHospital,
+  FaHeart,
   FaLocationDot,
   FaShieldHeart,
   FaStar,
   FaUserDoctor,
 } from "react-icons/fa6";
+import { AuthContext } from "../context/AuthContext";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/Clinics.css";
 
 function Clinics() {
+  const { user } = useContext(AuthContext);
+
   const [clinics, setClinics] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [filters, setFilters] = useState({
+    q: "",
+    city: "",
+    specialty: "",
+    minRating: "",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadClinics = async () => {
-      try {
-        const response = await api.get("/public/clinics");
-        setClinics(response.data);
-      } catch (err) {
-        setError("Failed to load clinics.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadClinics = async (currentFilters = filters) => {
+    setLoading(true);
+    setError("");
 
+    try {
+      const response = await api.get("/public/clinics", { params: currentFilters });
+      setClinics(response.data);
+    } catch (err) {
+      setError("Failed to load clinics.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFavorites = async () => {
+    if (!user || user.role !== "patient") return;
+
+    try {
+      const response = await api.get("/favorites/my");
+      setFavoriteIds(response.data.map((item) => item.id));
+    } catch {
+      // ignore quietly
+    }
+  };
+
+  useEffect(() => {
     loadClinics();
   }, []);
+
+  useEffect(() => {
+    loadFavorites();
+  }, [user]);
+
+  const handleFilterChange = (e) => {
+    setFilters((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    loadClinics(filters);
+  };
+
+  const toggleFavorite = async (clinicId) => {
+    try {
+      if (favoriteIds.includes(clinicId)) {
+        await api.delete(`/favorites/${clinicId}`);
+        setFavoriteIds((prev) => prev.filter((id) => id !== clinicId));
+      } else {
+        await api.post(`/favorites/${clinicId}`);
+        setFavoriteIds((prev) => [...prev, clinicId]);
+      }
+    } catch {
+      setError("Failed to update favorites.");
+    }
+  };
 
   return (
     <>
@@ -48,10 +103,40 @@ function Clinics() {
               </h1>
 
               <p className="clinics-subtitle">
-                Explore modern healthcare providers by city and rating using real platform data.
+                Search clinics by name, city, specialty and rating using live platform data.
               </p>
             </div>
           </section>
+
+          <form className="clinics-search-form soft-card" onSubmit={handleSearch}>
+            <input
+              name="q"
+              value={filters.q}
+              onChange={handleFilterChange}
+              placeholder="Search clinic name"
+            />
+            <input
+              name="city"
+              value={filters.city}
+              onChange={handleFilterChange}
+              placeholder="City"
+            />
+            <input
+              name="specialty"
+              value={filters.specialty}
+              onChange={handleFilterChange}
+              placeholder="Specialty"
+            />
+            <select name="minRating" value={filters.minRating} onChange={handleFilterChange}>
+              <option value="">Min rating</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+              <option value="4.5">4.5+</option>
+            </select>
+            <button type="submit" className="primary-btn">
+              Search
+            </button>
+          </form>
 
           {loading && <p>Loading clinics...</p>}
           {error && <p>{error}</p>}
@@ -65,9 +150,21 @@ function Clinics() {
                       <FaHospital />
                     </div>
 
-                    <div className="clinic-rating">
-                      <FaStar />
-                      <span>{clinic.rating || "0.0"}</span>
+                    <div className="clinic-card-top-right">
+                      <div className="clinic-rating">
+                        <FaStar />
+                        <span>{clinic.rating || "0.0"}</span>
+                      </div>
+
+                      {user?.role === "patient" && (
+                        <button
+                          type="button"
+                          className={`favorite-icon-btn ${favoriteIds.includes(clinic.id) ? "active" : ""}`}
+                          onClick={() => toggleFavorite(clinic.id)}
+                        >
+                          <FaHeart />
+                        </button>
+                      )}
                     </div>
                   </div>
 

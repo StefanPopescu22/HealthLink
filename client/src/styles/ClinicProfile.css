@@ -331,3 +331,52 @@
     width: 100%;
   }
 }
+
+.clinic-favorite-btn.active {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.clinic-review-form-card {
+  padding: 26px;
+  border-radius: 28px;
+  margin: 24px 0;
+}
+
+.clinic-review-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.clinic-review-form select,
+.clinic-review-form textarea {
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  outline: none;
+}
+
+.clinic-review-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.clinic-review-form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clinic-review-message.success {
+  color: var(--color-success);
+  margin-top: 12px;
+}
+
+.clinic-review-message.error {
+  color: var(--color-danger);
+  margin-top: 12px;
+}

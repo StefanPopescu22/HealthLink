@@ -12,23 +12,55 @@ import "../styles/Doctors.css";
 
 function Doctors() {
   const [doctors, setDoctors] = useState([]);
+  const [filters, setFilters] = useState({
+    q: "",
+    specialty: "",
+    clinicId: "",
+  });
+  const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const loadDoctors = async (currentFilters = filters) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.get("/public/doctors", { params: currentFilters });
+      setDoctors(response.data);
+    } catch {
+      setError("Failed to load doctors.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadDoctors = async () => {
+    loadDoctors();
+
+    const loadClinics = async () => {
       try {
-        const response = await api.get("/public/doctors");
-        setDoctors(response.data);
-      } catch (err) {
-        setError("Failed to load doctors.");
-      } finally {
-        setLoading(false);
+        const response = await api.get("/public/clinics");
+        setClinics(response.data);
+      } catch {
+        // ignore quietly
       }
     };
 
-    loadDoctors();
+    loadClinics();
   }, []);
+
+  const handleFilterChange = (e) => {
+    setFilters((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    loadDoctors(filters);
+  };
 
   return (
     <>
@@ -46,17 +78,49 @@ function Doctors() {
               </h1>
 
               <p className="doctors-subtitle">
-                Explore real doctor profiles, specialties and clinic affiliations.
+                Search doctors by name, specialty and clinic using real platform data.
               </p>
             </div>
-
-            <div className="doctors-search-card soft-card">
-              <div className="doctors-search-box">
-                <FaMagnifyingGlass />
-                <input type="text" placeholder="Search doctor or specialty" />
-              </div>
-            </div>
           </section>
+
+          <form className="doctors-search-toolbar soft-card" onSubmit={handleSearch}>
+            <div className="doctors-search-box">
+              <FaMagnifyingGlass />
+              <input
+                type="text"
+                name="q"
+                placeholder="Doctor name or clinic"
+                value={filters.q}
+                onChange={handleFilterChange}
+              />
+            </div>
+
+            <input
+              name="specialty"
+              value={filters.specialty}
+              onChange={handleFilterChange}
+              placeholder="Specialty"
+              className="doctor-filter-input"
+            />
+
+            <select
+              name="clinicId"
+              value={filters.clinicId}
+              onChange={handleFilterChange}
+              className="doctor-filter-input"
+            >
+              <option value="">All clinics</option>
+              {clinics.map((clinic) => (
+                <option key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </option>
+              ))}
+            </select>
+
+            <button type="submit" className="primary-btn doctors-search-btn">
+              Search
+            </button>
+          </form>
 
           {loading && <p>Loading doctors...</p>}
           {error && <p>{error}</p>}

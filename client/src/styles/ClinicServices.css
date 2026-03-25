@@ -1,0 +1,61 @@
+.clinic-services-page {
+  display: grid;
+  gap: 22px;
+}
+
+.clinic-services-header,
+.clinic-services-form {
+  padding: 26px;
+  border-radius: 28px;
+}
+
+.clinic-services-form {
+  display: grid;
+  grid-template-columns: 1fr 200px auto;
+  gap: 14px;
+}
+
+.clinic-services-form select,
+.clinic-services-form input,
+.clinic-service-edit-row input {
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  outline: none;
+  font: inherit;
+}
+
+.clinic-services-list {
+  display: grid;
+  gap: 18px;
+}
+
+.clinic-service-card {
+  padding: 24px;
+  border-radius: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.clinic-service-actions,
+.clinic-service-edit-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clinic-services-message.error {
+  color: var(--color-danger);
+}
+
+.clinic-services-message.success {
+  color: var(--color-success);
+}
+
+@media (max-width: 768px) {
+  .clinic-services-form {
+    grid-template-columns: 1fr;
+  }
+}
