@@ -114,7 +114,7 @@ function MedicalDocuments() {
                   </h1>
 
                   <p className="documents-subtitle">
-                    Upload and manage real medical documents stored on your HealthLink backend.
+                    Upload and manage your real medical documents.
                   </p>
                 </div>
 

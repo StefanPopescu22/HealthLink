@@ -10,8 +10,10 @@ const { isPositiveInt } = require("../utils/validators");
 const getMyFavorites = async (req, res) => {
   try {
     const favorites = await getFavoriteClinicsByUser(req.user.id);
+
     return res.status(200).json(favorites);
   } catch (error) {
+    console.error("Favorites load error:", error);
     return res.status(500).json({
       message: "Failed to load favorites.",
       error: error.message,
@@ -50,6 +52,7 @@ const saveFavoriteClinic = async (req, res) => {
       message: "Clinic added to favorites.",
     });
   } catch (error) {
+    console.error("Favorite add error:", error);
     return res.status(500).json({
       message: "Failed to add favorite.",
       error: error.message,
@@ -73,6 +76,7 @@ const deleteFavoriteClinic = async (req, res) => {
       message: "Clinic removed from favorites.",
     });
   } catch (error) {
+    console.error("Favorite delete error:", error);
     return res.status(500).json({
       message: "Failed to remove favorite.",
       error: error.message,

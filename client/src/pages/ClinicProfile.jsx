@@ -57,7 +57,8 @@ function ClinicProfile() {
         api.get(`/reviews/clinic/${id}/my`),
       ]);
 
-      setIsFavorite(favoritesRes.data.some((item) => String(item.id) === String(id)));
+      const favoriteList = Array.isArray(favoritesRes.data) ? favoritesRes.data : [];
+      setIsFavorite(favoriteList.some((item) => String(item.id) === String(id)));
 
       if (reviewRes.data) {
         setMyReview(reviewRes.data);
@@ -73,6 +74,7 @@ function ClinicProfile() {
         });
       }
     } catch {
+      setIsFavorite(false);
     }
   };
 

@@ -39,7 +39,9 @@ const getFavoriteClinicsByUser = async (userId) => {
   const [rows] = await db.execute(
     `
     SELECT
-      c.id,
+      f.id AS favorite_id,
+      f.created_at AS favorited_at,
+      c.id AS id,
       c.name,
       c.clinic_type,
       c.city,
@@ -47,12 +49,17 @@ const getFavoriteClinicsByUser = async (userId) => {
       c.phone,
       c.email,
       c.description,
-      COALESCE(ROUND(AVG(r.rating), 1), 0) AS rating
+      COALESCE(rv.rating, 0) AS rating
     FROM favorites f
     INNER JOIN clinics c ON c.id = f.clinic_id
-    LEFT JOIN reviews r ON r.clinic_id = c.id
+    LEFT JOIN (
+      SELECT
+        clinic_id,
+        ROUND(AVG(rating), 1) AS rating
+      FROM reviews
+      GROUP BY clinic_id
+    ) rv ON rv.clinic_id = c.id
     WHERE f.user_id = ?
-    GROUP BY c.id
     ORDER BY f.created_at DESC
     `,
     [userId]

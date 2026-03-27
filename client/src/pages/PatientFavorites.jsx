@@ -19,9 +19,10 @@ function PatientFavorites() {
 
     try {
       const response = await api.get("/favorites/my");
-      setFavorites(response.data);
+      setFavorites(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      setError("Failed to load favorites.");
+      setError(err.response?.data?.message || "Failed to load favorites.");
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
@@ -40,8 +41,8 @@ function PatientFavorites() {
       const response = await api.delete(`/favorites/${clinicId}`);
       setSuccess(response.data.message || "Clinic removed from favorites.");
       await loadFavorites();
-    } catch {
-      setError("Failed to remove favorite.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to remove favorite.");
     } finally {
       setWorkingId(null);
     }

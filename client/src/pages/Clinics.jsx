@@ -42,16 +42,20 @@ function Clinics() {
     }
   };
 
-  const loadFavorites = async () => {
-    if (!user || user.role !== "patient") return;
+    const loadFavorites = async () => {
+      if (!user || user.role !== "patient") return;
 
-    try {
-      const response = await api.get("/favorites/my");
-      setFavoriteIds(response.data.map((item) => item.id));
-    } catch {
-      // ignore quietly
-    }
-  };
+      try {
+        const response = await api.get("/favorites/my");
+        const clinicIds = Array.isArray(response.data)
+          ? response.data.map((item) => item.id)
+          : [];
+
+        setFavoriteIds(clinicIds);
+      } catch {
+        setFavoriteIds([]);
+      }
+    };
 
   useEffect(() => {
     loadClinics();
