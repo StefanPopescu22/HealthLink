@@ -5,7 +5,9 @@ const {
   cancelAppointment,
   getClinicForAppointment,
   getDoctorForAppointment,
-  hasDoctorSlotConflict,
+  getClinicServiceForAppointment,
+  getDoctorWorkingHoursForDate,
+  getDoctorAppointmentsForDate,
   hasPatientDuplicateAppointment,
 } = require("../models/appointmentModel");
 const {
@@ -16,13 +18,25 @@ const {
   normalizeText,
 } = require("../utils/validators");
 
+const timeToMinutes = (timeString) => {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
 const createPatientAppointment = async (req, res) => {
   try {
-    const { clinicId, doctorId, appointmentDate, appointmentTime, notes } = req.body;
+    const {
+      clinicId,
+      doctorId,
+      serviceId,
+      appointmentDate,
+      appointmentTime,
+      notes,
+    } = req.body;
 
-    if (!isPositiveInt(clinicId) || !isPositiveInt(doctorId)) {
+    if (!isPositiveInt(clinicId) || !isPositiveInt(doctorId) || !isPositiveInt(serviceId)) {
       return res.status(400).json({
-        message: "Clinic and doctor are required.",
+        message: "Clinic, doctor and service are required.",
       });
     }
 
@@ -58,15 +72,48 @@ const createPatientAppointment = async (req, res) => {
       });
     }
 
-    const doctorConflict = await hasDoctorSlotConflict({
-      doctorId: Number(doctorId),
-      appointmentDate,
-      appointmentTime,
+    const clinicService = await getClinicServiceForAppointment(Number(clinicId), Number(serviceId));
+    if (!clinicService) {
+      return res.status(400).json({
+        message: "Selected service is not available in this clinic.",
+      });
+    }
+
+    const selectedStartMinutes = timeToMinutes(appointmentTime);
+    const selectedEndMinutes = selectedStartMinutes + Number(clinicService.duration_minutes || 30);
+
+    const workingHours = await getDoctorWorkingHoursForDate(Number(doctorId), appointmentDate);
+    if (!workingHours || workingHours.length === 0) {
+      return res.status(400).json({
+        message: "This doctor is not working on the selected date.",
+      });
+    }
+
+    const fitsInSchedule = workingHours.some((interval) => {
+      const startMinutes = timeToMinutes(interval.start_time);
+      const endMinutes = timeToMinutes(interval.end_time);
+
+      return selectedStartMinutes >= startMinutes && selectedEndMinutes <= endMinutes;
     });
 
-    if (doctorConflict) {
+    if (!fitsInSchedule) {
+      return res.status(400).json({
+        message: "The selected appointment does not fit within the doctor's working hours.",
+      });
+    }
+
+    const sameDoctorAppointments = await getDoctorAppointmentsForDate(Number(doctorId), appointmentDate);
+
+    const hasOverlap = sameDoctorAppointments.some((existing) => {
+      const existingStart = timeToMinutes(existing.appointment_time);
+      const existingEnd = existingStart + Number(existing.duration_minutes || 30);
+
+      return selectedStartMinutes < existingEnd && selectedEndMinutes > existingStart;
+    });
+
+    if (hasOverlap) {
       return res.status(409).json({
-        message: "This doctor already has an appointment at the selected time.",
+        message: "Another patient already has an appointment with this doctor during the selected interval.",
       });
     }
 
@@ -79,7 +126,7 @@ const createPatientAppointment = async (req, res) => {
 
     if (duplicateAppointment) {
       return res.status(409).json({
-        message: "You already have this appointment booked.",
+        message: "You already have this exact appointment booked.",
       });
     }
 
@@ -87,6 +134,7 @@ const createPatientAppointment = async (req, res) => {
       patientUserId: req.user.id,
       clinicId: Number(clinicId),
       doctorId: Number(doctorId),
+      serviceId: Number(serviceId),
       appointmentDate,
       appointmentTime,
       notes: normalizeText(notes),

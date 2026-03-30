@@ -4,7 +4,9 @@ import Footer from "../components/Footer";
 import api from "../services/api";
 import {
   FaUserDoctor,
+  FaHospital,
   FaStethoscope,
+  FaClock,
   FaPhone,
   FaPen,
   FaCalendarDays,
@@ -12,11 +14,9 @@ import {
   FaCheck,
   FaXmark,
   FaPlus,
-  FaClock,
   FaClockRotateLeft,
-  FaHospital,
 } from "react-icons/fa6";
-import "../styles/ClinicManageDoctors.css";
+import "../styles/AdminManageDoctors.css";
 
 /* ── Weekday config ───────────────────────────────────────────── */
 const WEEKDAYS = {
@@ -29,15 +29,17 @@ const WEEKDAYS = {
   6: { label: "Saturday",  abbr: "SAT" },
 };
 
+/* ── Helper: initials from name ──────────────────────────────── */
 const initials = (first = "", last = "") =>
   `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "DR";
 
+/* ── Helper: format time ─────────────────────────────────────── */
 const fmt = (t) => (t ? t.slice(0, 5) : "—");
 
 /* ================================================================ */
-function ClinicManageDoctors() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+function AdminManageDoctors() {
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [editingDoctorId, setEditingDoctorId] = useState(null);
   const [expandedScheduleId, setExpandedScheduleId] = useState(null);
 
@@ -59,14 +61,14 @@ function ClinicManageDoctors() {
 
   /* ── Load ─────────────────────────────────────────────────── */
   const loadDoctors = async () => {
-    setLoading(true);
+    setLoadingDoctors(true);
     try {
-      const res = await api.get("/clinic/doctors");
-      setData(res.data);
+      const res = await api.get("/admin/doctors");
+      setDoctors(res.data);
     } catch {
-      setError("Failed to load clinic doctors.");
+      setError("Failed to load doctors.");
     } finally {
-      setLoading(false);
+      setLoadingDoctors(false);
     }
   };
 
@@ -93,7 +95,7 @@ function ClinicManageDoctors() {
   const handleSaveDoctor = async (doctorId) => {
     setError(""); setSuccess("");
     try {
-      const res = await api.put(`/clinic/doctors/${doctorId}`, formData);
+      const res = await api.put(`/admin/doctors/${doctorId}`, formData);
       setSuccess(res.data.message || "Doctor updated successfully.");
       setEditingDoctorId(null);
       await loadDoctors();
@@ -105,7 +107,7 @@ function ClinicManageDoctors() {
   /* ── Schedule ─────────────────────────────────────────────── */
   const loadDoctorSchedule = async (doctorId) => {
     try {
-      const res = await api.get(`/clinic/doctor-schedules/${doctorId}`);
+      const res = await api.get(`/admin/doctor-schedules/${doctorId}`);
       setScheduleMap((prev) => ({ ...prev, [doctorId]: res.data.schedule || [] }));
       setNewScheduleFormMap((prev) => ({
         ...prev,
@@ -139,7 +141,7 @@ function ClinicManageDoctors() {
     const form = newScheduleFormMap[doctorId];
     if (!form) return;
     try {
-      const res = await api.post(`/clinic/doctor-schedules/${doctorId}`, form);
+      const res = await api.post(`/admin/doctor-schedules/${doctorId}`, form);
       setSuccess(res.data.message || "Working interval created.");
       await loadDoctorSchedule(doctorId);
     } catch (err) {
@@ -169,7 +171,7 @@ function ClinicManageDoctors() {
     const payload = editingScheduleMap[scheduleId];
     if (!payload) return;
     try {
-      const res = await api.put(`/clinic/doctor-schedules/${scheduleId}`, payload);
+      const res = await api.put(`/admin/doctor-schedules/${scheduleId}`, payload);
       setSuccess(res.data.message || "Working interval updated.");
       setEditingScheduleMap((prev) => {
         const copy = { ...prev };
@@ -192,15 +194,13 @@ function ClinicManageDoctors() {
   const deleteInterval = async (doctorId, scheduleId) => {
     setError(""); setSuccess("");
     try {
-      const res = await api.delete(`/clinic/doctor-schedules/${scheduleId}`);
+      const res = await api.delete(`/admin/doctor-schedules/${scheduleId}`);
       setSuccess(res.data.message || "Working interval deleted.");
       await loadDoctorSchedule(doctorId);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete working interval.");
     }
   };
-
-  const doctors = data?.doctors || [];
 
   /* ── Render ───────────────────────────────────────────────── */
   return (
@@ -210,65 +210,61 @@ function ClinicManageDoctors() {
           <DashboardSidebar />
 
           <div className="dashboard-page-content">
-            <section className="clinic-manage-doctors-page">
+            <section className="admin-manage-doctors-page">
 
               {/* ── Header ──────────────────────────────────── */}
-              <div className="clinic-manage-doctors-header">
-                <div className="clinic-header-text">
-                  <div className="clinic-header-badge">
-                    <FaHospital />
-                    Clinic Panel
+              <div className="admin-manage-doctors-header">
+                <div className="admin-header-text">
+                  <div className="admin-header-badge">
+                    <FaUserDoctor />
+                    Admin Panel
                   </div>
-                  <h1>Manage Clinic Doctors</h1>
+                  <h1>Manage Doctors</h1>
                   <p>
                     Edit doctor profiles, update contact details and configure
-                    working schedules for your clinic team.
+                    structured working schedules from one place.
                   </p>
                 </div>
 
-                <div className="clinic-header-meta">
-                  <div className="clinic-doctor-count">
+                <div className="admin-header-meta">
+                  <div className="admin-doctor-count">
                     <strong>{doctors.length}</strong>
-                    <span>Doctors in clinic</span>
+                    <span>Doctors total</span>
                   </div>
                 </div>
               </div>
 
               {/* ── Feedback ────────────────────────────────── */}
-              {error   && <p className="clinic-manage-message error"><FaXmark /> {error}</p>}
-              {success && <p className="clinic-manage-message success"><FaCheck /> {success}</p>}
+              {error   && <p className="admin-manage-message error"><FaXmark /> {error}</p>}
+              {success && <p className="admin-manage-message success"><FaCheck /> {success}</p>}
 
               {/* ── List ────────────────────────────────────── */}
-              <div className="clinic-manage-doctors-list">
-
-                {/* Skeleton */}
-                {loading && (
+              <div className="admin-manage-doctors-list">
+                {loadingDoctors && (
                   <>
-                    <div className="clinic-doctor-skeleton" />
-                    <div className="clinic-doctor-skeleton" style={{ opacity: 0.6 }} />
-                    <div className="clinic-doctor-skeleton" style={{ opacity: 0.35 }} />
+                    <div className="admin-doctor-skeleton" />
+                    <div className="admin-doctor-skeleton" style={{ opacity: 0.6 }} />
+                    <div className="admin-doctor-skeleton" style={{ opacity: 0.35 }} />
                   </>
                 )}
 
-                {!loading && doctors.length === 0 && (
-                  <div className="soft-card empty-state-card">
-                    No doctors registered in this clinic yet.
-                  </div>
+                {!loadingDoctors && doctors.length === 0 && (
+                  <div className="soft-card empty-state-card">No doctors registered yet.</div>
                 )}
 
-                {!loading && doctors.map((doctor) => (
-                  <article className="clinic-manage-doctor-card" key={doctor.id}>
+                {!loadingDoctors && doctors.map((doctor) => (
+                  <article className="admin-manage-doctor-card" key={doctor.id}>
 
                     {/* ── Edit form ────────────────────────── */}
                     {editingDoctorId === doctor.id ? (
-                      <div className="clinic-manage-form">
-                        <div className="clinic-form-title">
+                      <div className="admin-manage-form">
+                        <div className="admin-form-title">
                           <FaPen />
                           Editing: Dr. {doctor.first_name} {doctor.last_name}
                         </div>
 
-                        <div className="clinic-form-grid">
-                          <div className="clinic-form-group">
+                        <div className="admin-form-grid">
+                          <div className="admin-form-group">
                             <label>First Name</label>
                             <input
                               name="firstName"
@@ -277,7 +273,7 @@ function ClinicManageDoctors() {
                               placeholder="First name"
                             />
                           </div>
-                          <div className="clinic-form-group">
+                          <div className="admin-form-group">
                             <label>Last Name</label>
                             <input
                               name="lastName"
@@ -286,7 +282,7 @@ function ClinicManageDoctors() {
                               placeholder="Last name"
                             />
                           </div>
-                          <div className="clinic-form-group">
+                          <div className="admin-form-group">
                             <label>Phone</label>
                             <input
                               name="phone"
@@ -295,7 +291,7 @@ function ClinicManageDoctors() {
                               placeholder="Phone number"
                             />
                           </div>
-                          <div className="clinic-form-group">
+                          <div className="admin-form-group">
                             <label>Years of Experience</label>
                             <input
                               name="experienceYears"
@@ -306,7 +302,7 @@ function ClinicManageDoctors() {
                               placeholder="e.g. 8"
                             />
                           </div>
-                          <div className="clinic-form-group full">
+                          <div className="admin-form-group full">
                             <label>Description</label>
                             <textarea
                               name="description"
@@ -315,7 +311,7 @@ function ClinicManageDoctors() {
                               placeholder="Professional bio or description..."
                             />
                           </div>
-                          <div className="clinic-form-group full">
+                          <div className="admin-form-group full">
                             <label>Schedule Summary (optional note)</label>
                             <textarea
                               name="scheduleInfo"
@@ -326,14 +322,14 @@ function ClinicManageDoctors() {
                           </div>
                         </div>
 
-                        <div className="clinic-form-actions">
+                        <div className="admin-form-actions">
                           <button
                             className="primary-btn"
                             onClick={() => handleSaveDoctor(doctor.id)}
                           >
                             <FaCheck /> Save Changes
                           </button>
-                          <button className="clinic-btn-cancel" onClick={cancelEdit}>
+                          <button className="admin-btn-cancel" onClick={cancelEdit}>
                             <FaXmark /> Cancel
                           </button>
                         </div>
@@ -341,29 +337,39 @@ function ClinicManageDoctors() {
                     ) : (
                       /* ── Doctor view ─────────────────────── */
                       <>
-                        <div className="clinic-doctor-top">
-                          <div className="clinic-doctor-identity">
-                            <div className="clinic-doctor-avatar">
+                        <div className="admin-doctor-top">
+                          <div className="admin-doctor-identity">
+                            {/* Avatar */}
+                            <div className="admin-doctor-avatar">
                               {initials(doctor.first_name, doctor.last_name)}
                             </div>
 
-                            <div className="clinic-doctor-info">
-                              <h3>Dr. {doctor.first_name} {doctor.last_name}</h3>
+                            {/* Info */}
+                            <div className="admin-doctor-info">
+                              <h3>
+                                Dr. {doctor.first_name} {doctor.last_name}
+                              </h3>
                               <p className="doctor-email">{doctor.email}</p>
 
-                              <div className="clinic-doctor-chips">
+                              <div className="admin-doctor-chips">
+                                {doctor.clinic_name && (
+                                  <span className="admin-chip chip-clinic">
+                                    <FaHospital />
+                                    {doctor.clinic_name}
+                                  </span>
+                                )}
                                 {doctor.specialties && (
-                                  <span className="clinic-chip chip-specialty">
+                                  <span className="admin-chip chip-specialty">
                                     <FaStethoscope />
                                     {doctor.specialties}
                                   </span>
                                 )}
-                                <span className="clinic-chip chip-exp">
+                                <span className="admin-chip chip-exp">
                                   <FaClockRotateLeft />
                                   {doctor.experience_years || 0} yrs exp.
                                 </span>
                                 {doctor.phone && (
-                                  <span className="clinic-chip chip-phone">
+                                  <span className="admin-chip">
                                     <FaPhone />
                                     {doctor.phone}
                                   </span>
@@ -373,34 +379,34 @@ function ClinicManageDoctors() {
                           </div>
                         </div>
 
-                        {/* Details */}
+                        {/* Details grid */}
                         {(doctor.description || doctor.schedule_info) && (
-                          <div className="clinic-doctor-details">
+                          <div className="admin-doctor-details">
                             {doctor.description && (
-                              <div className="clinic-detail-item">
-                                <span className="clinic-detail-label">Description</span>
-                                <span className="clinic-detail-value">{doctor.description}</span>
+                              <div className="admin-detail-item">
+                                <span className="admin-detail-label">Description</span>
+                                <span className="admin-detail-value">{doctor.description}</span>
                               </div>
                             )}
                             {doctor.schedule_info && (
-                              <div className="clinic-detail-item">
-                                <span className="clinic-detail-label">Schedule Note</span>
-                                <span className="clinic-detail-value">{doctor.schedule_info}</span>
+                              <div className="admin-detail-item">
+                                <span className="admin-detail-label">Schedule Note</span>
+                                <span className="admin-detail-value">{doctor.schedule_info}</span>
                               </div>
                             )}
                           </div>
                         )}
 
                         {/* Actions bar */}
-                        <div className="clinic-manage-main-actions">
+                        <div className="admin-manage-main-actions">
                           <button
-                            className="clinic-action-btn btn-edit"
+                            className="admin-action-btn btn-edit"
                             onClick={() => startEdit(doctor)}
                           >
                             <FaPen /> Edit Doctor
                           </button>
                           <button
-                            className={`clinic-action-btn btn-schedule ${expandedScheduleId === doctor.id ? "active" : ""}`}
+                            className={`admin-action-btn btn-schedule ${expandedScheduleId === doctor.id ? "active" : ""}`}
                             onClick={() => toggleSchedulePanel(doctor.id)}
                           >
                             <FaCalendarDays />
@@ -416,6 +422,7 @@ function ClinicManageDoctors() {
                     {expandedScheduleId === doctor.id && (
                       <section className="doctor-schedule-management-block">
 
+                        {/* Header */}
                         <div className="schedule-block-header">
                           <h4>
                             <FaCalendarDays />
@@ -426,7 +433,7 @@ function ClinicManageDoctors() {
                           </span>
                         </div>
 
-                        {/* Add form */}
+                        {/* Add interval form */}
                         <div className="doctor-schedule-add-form">
                           <div className="schedule-field-wrap">
                             <span className="schedule-add-label">Day of week</span>
@@ -467,15 +474,13 @@ function ClinicManageDoctors() {
                           </button>
                         </div>
 
-                        {/* Intervals */}
+                        {/* Intervals list */}
                         <div className="doctor-schedule-intervals-list">
                           {(scheduleMap[doctor.id] || []).length === 0 && (
                             <div className="schedule-empty-state">
                               <FaCalendarDays />
                               <span>No working intervals configured yet.</span>
-                              <span style={{ fontSize: "0.82rem" }}>
-                                Use the form above to add the first one.
-                              </span>
+                              <span style={{ fontSize: "0.82rem" }}>Use the form above to add the first one.</span>
                             </div>
                           )}
 
@@ -486,6 +491,7 @@ function ClinicManageDoctors() {
                             return (
                               <article className="doctor-schedule-interval-card" key={interval.id}>
                                 {isEditing ? (
+                                  /* Edit row */
                                   <div className="doctor-schedule-edit-row" style={{ width: "100%" }}>
                                     <select
                                       value={editingScheduleMap[interval.id].weekday}
@@ -521,6 +527,7 @@ function ClinicManageDoctors() {
                                     </div>
                                   </div>
                                 ) : (
+                                  /* View row */
                                   <>
                                     <div className="interval-info">
                                       <div className="interval-day">
@@ -569,4 +576,4 @@ function ClinicManageDoctors() {
   );
 }
 
-export default ClinicManageDoctors;
+export default AdminManageDoctors;

@@ -1,0 +1,65 @@
+.doctor-schedules-page {
+  display: grid;
+  gap: 22px;
+}
+
+.doctor-schedules-header,
+.doctor-schedules-selector,
+.doctor-schedules-form {
+  padding: 26px;
+  border-radius: 28px;
+}
+
+.doctor-schedules-selector,
+.doctor-schedules-form {
+  display: grid;
+  gap: 12px;
+}
+
+.doctor-schedules-selector select,
+.doctor-schedules-form select,
+.doctor-schedules-form input,
+.doctor-schedule-edit-row select,
+.doctor-schedule-edit-row input {
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  outline: none;
+  font: inherit;
+}
+
+.doctor-schedules-list {
+  display: grid;
+  gap: 16px;
+}
+
+.doctor-schedule-card {
+  padding: 24px;
+  border-radius: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.doctor-schedule-actions,
+.doctor-schedule-edit-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.doctor-schedules-message.error {
+  color: var(--color-danger);
+}
+
+.doctor-schedules-message.success {
+  color: var(--color-success);
+}
+
+@media (max-width: 768px) {
+  .doctor-schedule-actions,
+  .doctor-schedule-edit-row {
+    flex-direction: column;
+  }
+}

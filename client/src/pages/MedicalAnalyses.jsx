@@ -2,21 +2,44 @@ import { useEffect, useState } from "react";
 import {
   FaDownload,
   FaFileMedical,
+  FaFlask,
+  FaHospital,
   FaMagnifyingGlass,
   FaNotesMedical,
   FaShieldHeart,
   FaTrash,
   FaUpload,
+  FaCheck,
+  FaXmark,
+  FaCircleCheck,
 } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/MedicalAnalyses.css";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
+/* ── Helper: format date ─────────────────────────────────────── */
+const formatDate = (dateStr) => {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+/* ================================================================ */
 function MedicalAnalyses() {
   const [analyses, setAnalyses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     analysisType: "",
@@ -24,43 +47,42 @@ function MedicalAnalyses() {
     resultStatus: "available",
     file: null,
   });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  /* ── Load ─────────────────────────────────────────────────── */
   const loadAnalyses = async () => {
+    setLoading(true);
     try {
-      const response = await api.get("/analyses/my");
-      setAnalyses(response.data);
-    } catch (err) {
+      const res = await api.get("/analyses/my");
+      setAnalyses(res.data);
+    } catch {
       setError("Failed to load analyses.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadAnalyses();
-  }, []);
+  useEffect(() => { loadAnalyses(); }, []);
 
+  /* ── Derived stats ────────────────────────────────────────── */
+  const reviewedCount  = analyses.filter((a) => a.result_status === "reviewed").length;
+  const availableCount = analyses.filter((a) => a.result_status === "available").length;
+
+  /* ── Handlers ─────────────────────────────────────────────── */
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    if (name === "file") {
-      setFormData((prev) => ({
-        ...prev,
-        file: files[0] || null,
-      }));
-      return;
-    }
-
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "file" ? (files[0] || null) : value,
     }));
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError(""); setSuccess("");
+    setSubmitting(true);
 
     try {
       const payload = new FormData();
@@ -70,18 +92,12 @@ function MedicalAnalyses() {
       payload.append("resultStatus", formData.resultStatus);
       payload.append("file", formData.file);
 
-      const response = await api.post("/analyses", payload, {
+      const res = await api.post("/analyses", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setSuccess(response.data.message || "Analysis uploaded successfully.");
-      setFormData({
-        title: "",
-        analysisType: "",
-        labName: "",
-        resultStatus: "available",
-        file: null,
-      });
+      setSuccess(res.data.message || "Analysis uploaded successfully.");
+      setFormData({ title: "", analysisType: "", labName: "", resultStatus: "available", file: null });
 
       const fileInput = document.getElementById("medical-analysis-file");
       if (fileInput) fileInput.value = "";
@@ -89,22 +105,23 @@ function MedicalAnalyses() {
       await loadAnalyses();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to upload analysis.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleDelete = async (analysisId) => {
-    setError("");
-    setSuccess("");
-
+    setError(""); setSuccess("");
     try {
-      const response = await api.delete(`/analyses/${analysisId}`);
-      setSuccess(response.data.message || "Analysis deleted successfully.");
+      const res = await api.delete(`/analyses/${analysisId}`);
+      setSuccess(res.data.message || "Analysis deleted successfully.");
       await loadAnalyses();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete analysis.");
     }
   };
 
+  /* ── Render ───────────────────────────────────────────────── */
   return (
     <>
       <main className="dashboard-screen">
@@ -113,7 +130,10 @@ function MedicalAnalyses() {
 
           <div className="dashboard-page-content">
             <section className="analyses-page">
+
+              {/* ── Hero ────────────────────────────────────── */}
               <section className="analyses-hero">
+                {/* Left content */}
                 <div className="analyses-hero-content">
                   <div className="analyses-badge">
                     <FaShieldHeart />
@@ -121,57 +141,104 @@ function MedicalAnalyses() {
                   </div>
 
                   <h1 className="analyses-title">
-                    Access your <span className="gradient-text">medical analyses</span>
+                    Manage your{" "}
+                    <span className="gradient-text">medical analyses</span>
                   </h1>
 
                   <p className="analyses-subtitle">
-                    Upload and manage real laboratory files and analysis entries.
+                    Upload and organise real laboratory files. Access your full
+                    analysis history, download results and track review status
+                    from one secure workspace.
                   </p>
                 </div>
 
-                <div className="analyses-side-card soft-card">
+                {/* Right stats card */}
+                <div className="analyses-side-card">
+                  <div className="analyses-side-header">
+                    <span>Analyses Overview</span>
+                    <span className="analyses-side-pill">Live</span>
+                  </div>
+
+                  <div className="analyses-side-stats">
+                    <div className="analyses-stat-item">
+                      <span className="analyses-stat-label">Total</span>
+                      <strong>{analyses.length}</strong>
+                      <small>uploaded files</small>
+                    </div>
+                    <div className="analyses-stat-item">
+                      <span className="analyses-stat-label">Reviewed</span>
+                      <strong>{reviewedCount}</strong>
+                      <small>by a doctor</small>
+                    </div>
+                    <div className="analyses-stat-item">
+                      <span className="analyses-stat-label">Available</span>
+                      <strong>{availableCount}</strong>
+                      <small>pending review</small>
+                    </div>
+                    <div className="analyses-stat-item">
+                      <span className="analyses-stat-label">Status</span>
+                      <strong style={{ fontSize: "1.1rem", marginTop: 4 }}>Active</strong>
+                      <small>archive online</small>
+                    </div>
+                  </div>
+
+                  {/* Search */}
                   <div className="analyses-search-box">
                     <FaMagnifyingGlass />
-                    <input type="text" placeholder="Analyses are shown from live data" disabled />
+                    <input
+                      type="text"
+                      placeholder="Search your analyses..."
+                      disabled
+                    />
                   </div>
                 </div>
               </section>
 
-              <section className="soft-card analyses-upload-form-card">
-                <h2>Upload New Analysis</h2>
-                <p>Add a real analysis file to your medical history.</p>
+              {/* ── Upload form ──────────────────────────────── */}
+              <section className="analyses-upload-form-card">
+                <div className="analyses-form-heading">
+                  <h2>Upload New Analysis</h2>
+                  <p>
+                    Add a laboratory result or medical analysis file to your
+                    personal health archive.
+                  </p>
+                </div>
 
                 <form className="analyses-upload-form" onSubmit={handleUpload}>
+                  {/* Title */}
                   <div className="analyses-upload-group">
                     <label>Title</label>
                     <input
                       name="title"
                       value={formData.title}
                       onChange={handleChange}
-                      placeholder="Analysis title"
+                      placeholder="e.g. Complete Blood Count"
                     />
                   </div>
 
+                  {/* Type */}
                   <div className="analyses-upload-group">
                     <label>Analysis Type</label>
                     <input
                       name="analysisType"
                       value={formData.analysisType}
                       onChange={handleChange}
-                      placeholder="Example: Biochemistry"
+                      placeholder="e.g. Biochemistry, Haematology"
                     />
                   </div>
 
+                  {/* Lab name */}
                   <div className="analyses-upload-group">
                     <label>Laboratory Name</label>
                     <input
                       name="labName"
                       value={formData.labName}
                       onChange={handleChange}
-                      placeholder="Laboratory name"
+                      placeholder="e.g. Synevo, Medlife Lab"
                     />
                   </div>
 
+                  {/* Status */}
                   <div className="analyses-upload-group">
                     <label>Result Status</label>
                     <select
@@ -184,8 +251,9 @@ function MedicalAnalyses() {
                     </select>
                   </div>
 
+                  {/* File */}
                   <div className="analyses-upload-group full">
-                    <label>File</label>
+                    <label>File (PDF, JPG, PNG)</label>
                     <input
                       id="medical-analysis-file"
                       name="file"
@@ -195,52 +263,104 @@ function MedicalAnalyses() {
                     />
                   </div>
 
+                  {/* Submit */}
                   <div className="analyses-upload-group full">
-                    <button type="submit" className="primary-btn analyses-upload-btn">
+                    <button
+                      type="submit"
+                      className="primary-btn analyses-upload-btn"
+                      disabled={submitting}
+                    >
                       <FaUpload />
-                      Upload Analysis
+                      {submitting ? "Uploading…" : "Upload Analysis"}
                     </button>
                   </div>
                 </form>
 
-                {error && <p className="analyses-message error">{error}</p>}
-                {success && <p className="analyses-message success">{success}</p>}
+                {error   && <p className="analyses-message error"><FaXmark /> {error}</p>}
+                {success && <p className="analyses-message success"><FaCheck /> {success}</p>}
               </section>
 
-              <section className="analyses-grid">
-                {analyses.length === 0 && <p>No uploaded analyses yet.</p>}
+              {/* ── List header ──────────────────────────────── */}
+              <div className="analyses-section-heading">
+                <div>
+                  <h2>Your Analyses</h2>
+                  <p>All uploaded laboratory results and medical files.</p>
+                </div>
+                {analyses.length > 0 && (
+                  <span className="analyses-count-pill">
+                    {analyses.length} {analyses.length === 1 ? "file" : "files"}
+                  </span>
+                )}
+              </div>
 
-                {analyses.map((item) => (
-                  <article className="soft-card analysis-card" key={item.id}>
+              {/* ── Analyses list ─────────────────────────────── */}
+              <div className="analyses-list">
+                {loading && (
+                  <>
+                    <div className="analysis-skeleton" />
+                    <div className="analysis-skeleton" style={{ opacity: 0.6 }} />
+                    <div className="analysis-skeleton" style={{ opacity: 0.35 }} />
+                  </>
+                )}
+
+                {!loading && analyses.length === 0 && (
+                  <div className="analyses-empty-state">
+                    <div className="analyses-empty-icon">
+                      <FaNotesMedical />
+                    </div>
+                    <h3>No analyses uploaded yet</h3>
+                    <p>
+                      Use the form above to upload your first laboratory result
+                      or medical analysis.
+                    </p>
+                  </div>
+                )}
+
+                {!loading && analyses.map((item) => (
+                  <article className="analysis-card" key={item.id}>
+                    {/* Icon */}
                     <div className="analysis-icon-box">
                       <FaNotesMedical />
                     </div>
 
+                    {/* Content */}
                     <div className="analysis-content">
-                      <h2>{item.title}</h2>
-                      <p>{item.analysis_type}</p>
+                      <h3>{item.title}</h3>
+                      <p className="analysis-type">{item.analysis_type || "—"}</p>
 
                       <div className="analysis-meta">
-                        <span>{item.lab_name || "No lab name"}</span>
-                        <span className={`analysis-result ${item.result_status.toLowerCase()}`}>
+                        {item.lab_name && (
+                          <span className="analysis-meta-chip">
+                            <FaHospital />
+                            {item.lab_name}
+                          </span>
+                        )}
+                        {item.uploaded_at && (
+                          <span className="analysis-meta-chip">
+                            <FaFlask />
+                            {formatDate(item.uploaded_at)}
+                          </span>
+                        )}
+                        <span className={`analysis-result ${item.result_status?.toLowerCase()}`}>
+                          {item.result_status === "reviewed" && <FaCircleCheck />}
                           {item.result_status}
                         </span>
                       </div>
                     </div>
 
-                    <div className="document-actions">
+                    {/* Actions */}
+                    <div className="analysis-actions">
                       <a
                         href={`${BACKEND_URL}${item.file_path}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="secondary-btn"
+                        className="analysis-download-btn"
                       >
                         <FaDownload />
                         Download
                       </a>
-
                       <button
-                        className="secondary-btn danger-btn"
+                        className="analysis-delete-btn"
                         onClick={() => handleDelete(item.id)}
                       >
                         <FaTrash />
@@ -249,25 +369,35 @@ function MedicalAnalyses() {
                     </div>
                   </article>
                 ))}
-              </section>
+              </div>
 
+              {/* ── Summary cards ─────────────────────────────── */}
               <section className="analyses-summary">
-                <article className="soft-card analyses-summary-card">
+                <article className="analyses-summary-card">
                   <div className="analysis-summary-icon">
                     <FaFileMedical />
                   </div>
                   <h3>{analyses.length} Total Analyses</h3>
-                  <p>Stored in your digital healthcare archive.</p>
+                  <p>Stored securely in your digital healthcare archive.</p>
                 </article>
 
-                <article className="soft-card analyses-summary-card">
+                <article className="analyses-summary-card">
+                  <div className="analysis-summary-icon">
+                    <FaCircleCheck />
+                  </div>
+                  <h3>{reviewedCount} Reviewed</h3>
+                  <p>Analyses that have been checked by a medical professional.</p>
+                </article>
+
+                <article className="analyses-summary-card">
                   <div className="analysis-summary-icon">
                     <FaNotesMedical />
                   </div>
                   <h3>Live Data</h3>
-                  <p>All uploaded analyses are loaded from your backend.</p>
+                  <p>All analyses are loaded directly from your secure backend.</p>
                 </article>
               </section>
+
             </section>
           </div>
         </div>

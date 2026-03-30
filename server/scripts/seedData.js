@@ -136,6 +136,27 @@ async function ensureFavorite(userId, clinicId) {
   );
 }
 
+  async function ensureDoctorWorkingHours(doctorId, weekday, startTime, endTime) {
+    const [rows] = await db.execute(
+      `
+      SELECT *
+      FROM doctor_working_hours
+      WHERE doctor_id = ? AND weekday = ? AND start_time = ? AND end_time = ?
+      `,
+      [doctorId, weekday, startTime, endTime]
+    );
+
+    if (rows[0]) return;
+
+    await db.execute(
+      `
+      INSERT INTO doctor_working_hours (doctor_id, weekday, start_time, end_time)
+      VALUES (?, ?, ?, ?)
+      `,
+      [doctorId, weekday, startTime, endTime]
+    );
+  }
+
 async function runSeed() {
   try {
     console.log("Seeding HealthLink data...");
@@ -208,6 +229,7 @@ async function runSeed() {
     await ensureClinicService(clinicId, dermatologyServiceId, 220);
     await ensureClinicService(clinicId, checkupServiceId, 180);
 
+
     const doctorUserId = await ensureUser({
       firstName: "Elena",
       lastName: "Popescu",
@@ -229,6 +251,9 @@ async function runSeed() {
 
     await ensureDoctorSpecialty(doctorId, cardiologyId);
     await ensureDoctorSpecialty(doctorId, internalMedicineId);
+     await ensureDoctorWorkingHours(doctorId, 1, "09:00:00", "15:00:00"); // Monday
+    await ensureDoctorWorkingHours(doctorId, 3, "10:00:00", "16:00:00"); // Wednesday
+    await ensureDoctorWorkingHours(doctorId, 5, "08:00:00", "13:00:00"); // Friday
 
     await ensureReview(patientId, clinicId, 5, "Very professional clinic with fast scheduling.");
     await ensureFavorite(patientId, clinicId);

@@ -1,9 +1,9 @@
 /* ================================================================
-   CLINIC MANAGE DOCTORS — consistent cu variables.css + components.css
+   ADMIN MANAGE DOCTORS — consistent cu variables.css + components.css
    ================================================================ */
 
 /* ── Page wrapper ──────────────────────────────────────────────── */
-.clinic-manage-doctors-page {
+.admin-manage-doctors-page {
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -11,7 +11,7 @@
 }
 
 /* ── Hero header card ──────────────────────────────────────────── */
-.clinic-manage-doctors-header {
+.admin-manage-doctors-header {
   padding: 40px 44px;
   border-radius: var(--radius-xl);
   background: var(--color-surface);
@@ -25,7 +25,7 @@
   overflow: hidden;
 }
 
-.clinic-manage-doctors-header::before {
+.admin-manage-doctors-header::before {
   content: "";
   position: absolute;
   top: -60px;
@@ -33,21 +33,21 @@
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(5, 150, 105, 0.07) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.07) 0%, transparent 65%);
   pointer-events: none;
 }
 
-.clinic-header-text { position: relative; }
+.admin-header-text { position: relative; }
 
-.clinic-header-badge {
+.admin-header-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
   border-radius: 999px;
-  background: rgba(5, 150, 105, 0.08);
-  border: 1px solid rgba(5, 150, 105, 0.2);
-  color: #059669;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  color: var(--color-primary);
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -55,7 +55,7 @@
   margin-bottom: 14px;
 }
 
-.clinic-manage-doctors-header h1 {
+.admin-manage-doctors-header h1 {
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--color-text);
@@ -63,13 +63,13 @@
   margin-bottom: 8px;
 }
 
-.clinic-manage-doctors-header p {
+.admin-manage-doctors-header p {
   color: var(--color-text-soft);
   font-size: 0.97rem;
   line-height: 1.6;
 }
 
-.clinic-header-meta {
+.admin-header-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -77,26 +77,26 @@
   flex-shrink: 0;
 }
 
-.clinic-doctor-count {
+.admin-doctor-count {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 18px 28px;
   border-radius: var(--radius-lg);
-  background: rgba(5, 150, 105, 0.06);
-  border: 1px solid rgba(5, 150, 105, 0.18);
+  background: var(--gradient-soft);
+  border: 1px solid #bfdbfe;
 }
 
-.clinic-doctor-count strong {
+.admin-doctor-count strong {
   font-size: 2.4rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #059669, #0ea5e9);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1;
 }
 
-.clinic-doctor-count span {
+.admin-doctor-count span {
   font-size: 0.78rem;
   color: var(--color-text-muted);
   font-weight: 600;
@@ -106,7 +106,7 @@
 }
 
 /* ── Feedback messages ─────────────────────────────────────────── */
-.clinic-manage-message {
+.admin-manage-message {
   padding: 14px 20px;
   border-radius: var(--radius-md);
   font-size: 0.93rem;
@@ -122,27 +122,27 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.clinic-manage-message.error {
+.admin-manage-message.error {
   background: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
 }
 
-.clinic-manage-message.success {
+.admin-manage-message.success {
   background: #ecfdf5;
   color: #0f766e;
   border: 1px solid #99f6e4;
 }
 
 /* ── Doctors list ──────────────────────────────────────────────── */
-.clinic-manage-doctors-list {
+.admin-manage-doctors-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
 /* ── Doctor card ───────────────────────────────────────────────── */
-.clinic-manage-doctor-card {
+.admin-manage-doctor-card {
   padding: 0;
   border-radius: var(--radius-xl);
   background: var(--color-surface);
@@ -152,13 +152,13 @@
   transition: var(--transition);
 }
 
-.clinic-manage-doctor-card:hover {
+.admin-manage-doctor-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: #a7f3d0;
+  border-color: #bfdbfe;
 }
 
-/* ── Doctor card top ───────────────────────────────────────────── */
-.clinic-doctor-top {
+/* ── Doctor card top section ───────────────────────────────────── */
+.admin-doctor-top {
   padding: 28px 32px;
   display: flex;
   align-items: flex-start;
@@ -166,7 +166,7 @@
   gap: 24px;
 }
 
-.clinic-doctor-identity {
+.admin-doctor-identity {
   display: flex;
   align-items: flex-start;
   gap: 18px;
@@ -174,23 +174,23 @@
   min-width: 0;
 }
 
-.clinic-doctor-avatar {
+.admin-doctor-avatar {
   width: 60px;
   height: 60px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #059669, #0ea5e9);
+  background: var(--gradient-primary);
   color: white;
   font-weight: 800;
   font-size: 1.1rem;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
 }
 
-.clinic-doctor-info { flex: 1; min-width: 0; }
+.admin-doctor-info { flex: 1; min-width: 0; }
 
-.clinic-doctor-info h3 {
+.admin-doctor-info h3 {
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--color-text);
@@ -198,19 +198,19 @@
   letter-spacing: -0.01em;
 }
 
-.clinic-doctor-info .doctor-email {
+.admin-doctor-info .doctor-email {
   font-size: 0.88rem;
   color: var(--color-text-muted);
   margin-bottom: 12px;
 }
 
-.clinic-doctor-chips {
+.admin-doctor-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.clinic-chip {
+.admin-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -224,35 +224,38 @@
   white-space: nowrap;
 }
 
-.clinic-chip svg { font-size: 0.78rem; }
+.admin-chip svg {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+}
 
-.clinic-chip.chip-specialty {
+.admin-chip.chip-clinic {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: #bfdbfe;
+  color: var(--color-primary);
+}
+
+.admin-chip.chip-specialty {
   background: rgba(124, 58, 237, 0.06);
   border-color: #ddd6fe;
   color: #7c3aed;
 }
 
-.clinic-chip.chip-exp {
+.admin-chip.chip-exp {
   background: rgba(5, 150, 105, 0.06);
-  border-color: #a7f3d0;
+  border-color: #bbf7d0;
   color: #059669;
 }
 
-.clinic-chip.chip-phone {
-  background: rgba(14, 165, 233, 0.06);
-  border-color: #bae6fd;
-  color: #0284c7;
-}
-
-/* Details grid */
-.clinic-doctor-details {
+/* Extra details row */
+.admin-doctor-details {
   padding: 0 32px 20px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.clinic-detail-item {
+.admin-detail-item {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -262,7 +265,7 @@
   border: 1px solid var(--color-border);
 }
 
-.clinic-detail-label {
+.admin-detail-label {
   font-size: 0.73rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -270,7 +273,7 @@
   color: var(--color-text-muted);
 }
 
-.clinic-detail-value {
+.admin-detail-value {
   font-size: 0.92rem;
   color: var(--color-text);
   font-weight: 500;
@@ -278,7 +281,7 @@
 }
 
 /* ── Actions bar ───────────────────────────────────────────────── */
-.clinic-manage-main-actions {
+.admin-manage-main-actions {
   padding: 16px 32px;
   border-top: 1px solid var(--color-border);
   display: flex;
@@ -287,7 +290,7 @@
   background: var(--color-surface-soft);
 }
 
-.clinic-action-btn {
+.admin-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -301,13 +304,13 @@
   border: 1.5px solid transparent;
 }
 
-.clinic-action-btn.btn-edit {
+.admin-action-btn.btn-edit {
   background: rgba(37, 99, 235, 0.08);
   border-color: rgba(37, 99, 235, 0.2);
   color: var(--color-primary);
 }
 
-.clinic-action-btn.btn-edit:hover {
+.admin-action-btn.btn-edit:hover {
   background: var(--color-primary);
   color: white;
   border-color: var(--color-primary);
@@ -315,13 +318,13 @@
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
 }
 
-.clinic-action-btn.btn-schedule {
+.admin-action-btn.btn-schedule {
   background: rgba(5, 150, 105, 0.07);
   border-color: rgba(5, 150, 105, 0.2);
   color: #059669;
 }
 
-.clinic-action-btn.btn-schedule:hover {
+.admin-action-btn.btn-schedule:hover {
   background: #059669;
   color: white;
   border-color: #059669;
@@ -329,18 +332,18 @@
   box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
 }
 
-.clinic-action-btn.btn-schedule.active {
+.admin-action-btn.btn-schedule.active {
   background: #059669;
   color: white;
   border-color: #059669;
 }
 
 /* ── Edit form ─────────────────────────────────────────────────── */
-.clinic-manage-form {
+.admin-manage-form {
   padding: 28px 32px;
 }
 
-.clinic-form-title {
+.admin-form-title {
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--color-text);
@@ -352,24 +355,26 @@
   gap: 10px;
 }
 
-.clinic-form-title svg { color: #059669; }
+.admin-form-title svg { color: var(--color-primary); }
 
-.clinic-form-grid {
+.admin-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
 }
 
-.clinic-form-group {
+.admin-form-group {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-.clinic-form-group.full { grid-column: 1 / -1; }
+.admin-form-group.full {
+  grid-column: 1 / -1;
+}
 
-.clinic-form-group label {
+.admin-form-group label {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--color-text-soft);
@@ -378,9 +383,9 @@
   padding-left: 2px;
 }
 
-.clinic-manage-form input,
-.clinic-manage-form textarea,
-.clinic-manage-form select,
+.admin-form-group input,
+.admin-form-group textarea,
+.admin-form-group select,
 .doctor-schedule-add-form select,
 .doctor-schedule-add-form input,
 .doctor-schedule-edit-row select,
@@ -397,40 +402,40 @@
   outline: none;
 }
 
-.clinic-manage-form input:hover,
-.clinic-manage-form select:hover,
+.admin-form-group input:hover,
+.admin-form-group select:hover,
 .doctor-schedule-add-form select:hover,
 .doctor-schedule-add-form input:hover {
-  border-color: #6ee7b7;
+  border-color: #93c5fd;
 }
 
-.clinic-manage-form input:focus,
-.clinic-manage-form select:focus,
-.clinic-manage-form textarea:focus,
+.admin-form-group input:focus,
+.admin-form-group select:focus,
+.admin-form-group textarea:focus,
 .doctor-schedule-add-form select:focus,
 .doctor-schedule-add-form input:focus,
 .doctor-schedule-edit-row input:focus,
 .doctor-schedule-edit-row select:focus {
-  border-color: #059669;
+  border-color: var(--color-primary);
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
-.clinic-manage-form textarea {
+.admin-form-group textarea {
   min-height: 100px;
   padding: 14px 16px;
   resize: vertical;
   line-height: 1.6;
 }
 
-.clinic-form-actions {
+.admin-form-actions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
   flex-wrap: wrap;
 }
 
-.clinic-btn-cancel {
+.admin-btn-cancel {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -446,16 +451,16 @@
   transition: var(--transition);
 }
 
-.clinic-btn-cancel:hover {
+.admin-btn-cancel:hover {
   background: var(--color-surface-soft);
-  border-color: #6ee7b7;
+  border-color: #93c5fd;
 }
 
 /* ── Schedule panel ────────────────────────────────────────────── */
 .doctor-schedule-management-block {
   border-top: 1px solid var(--color-border);
   padding: 28px 32px;
-  background: linear-gradient(180deg, rgba(236, 253, 245, 0.4) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(239,246,255,0.35) 0%, transparent 100%);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -484,16 +489,16 @@
   gap: 10px;
 }
 
-.schedule-block-header h4 svg { color: #059669; }
+.schedule-block-header h4 svg { color: var(--color-primary); }
 
 .schedule-block-header .schedule-count {
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(5, 150, 105, 0.1);
-  color: #059669;
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--color-secondary);
   font-size: 0.78rem;
   font-weight: 800;
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 /* Add form */
@@ -550,7 +555,7 @@
 }
 
 .doctor-schedule-interval-card:hover {
-  border-color: #a7f3d0;
+  border-color: #bfdbfe;
 }
 
 .interval-info {
@@ -567,15 +572,15 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background: rgba(5, 150, 105, 0.08);
-  border: 1px solid rgba(5, 150, 105, 0.18);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.15);
   flex-shrink: 0;
 }
 
 .interval-day-abbr {
   font-size: 0.75rem;
   font-weight: 800;
-  color: #059669;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -595,10 +600,7 @@
   gap: 6px;
 }
 
-.interval-text p svg {
-  color: #059669;
-  font-size: 0.82rem;
-}
+.interval-text p svg { color: var(--color-primary); font-size: 0.82rem; }
 
 .doctor-schedule-actions {
   display: flex;
@@ -644,7 +646,7 @@
   border-color: #dc2626;
 }
 
-/* Edit row */
+/* Edit row for schedule interval */
 .doctor-schedule-edit-row {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr auto;
@@ -660,7 +662,7 @@
   border-radius: var(--radius-md);
 }
 
-/* Empty state */
+/* Empty state inside schedule */
 .schedule-empty-state {
   padding: 32px 24px;
   text-align: center;
@@ -677,13 +679,13 @@
 
 .schedule-empty-state svg {
   font-size: 1.8rem;
-  color: #059669;
+  color: var(--color-primary);
   opacity: 0.35;
   margin-bottom: 4px;
 }
 
-/* Skeleton */
-.clinic-doctor-skeleton {
+/* ── Loading skeleton ──────────────────────────────────────────── */
+.admin-doctor-skeleton {
   height: 120px;
   border-radius: var(--radius-xl);
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
@@ -698,15 +700,18 @@
 
 /* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .clinic-manage-doctors-header {
+  .admin-manage-doctors-header {
     flex-direction: column;
     align-items: flex-start;
     padding: 28px;
   }
 
-  .clinic-header-meta { align-items: flex-start; width: 100%; }
+  .admin-header-meta {
+    align-items: flex-start;
+    width: 100%;
+  }
 
-  .clinic-doctor-count {
+  .admin-doctor-count {
     flex-direction: row;
     align-items: center;
     gap: 12px;
@@ -715,29 +720,65 @@
 }
 
 @media (max-width: 900px) {
-  .doctor-schedule-add-form  { grid-template-columns: 1fr 1fr; }
-  .doctor-schedule-edit-row  { grid-template-columns: 1fr 1fr; }
-  .clinic-form-grid          { grid-template-columns: 1fr; }
+  .doctor-schedule-add-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .doctor-schedule-edit-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .clinic-doctor-top         { padding: 22px 20px; flex-direction: column; }
-  .clinic-manage-main-actions { padding: 14px 20px; }
-  .clinic-action-btn         { flex: 1; justify-content: center; }
-  .clinic-manage-form        { padding: 22px 20px; }
-  .doctor-schedule-management-block { padding: 22px 20px; }
-  .doctor-schedule-add-form  { grid-template-columns: 1fr; }
-  .doctor-schedule-edit-row  { grid-template-columns: 1fr; }
+  .admin-doctor-top {
+    padding: 22px 20px;
+    flex-direction: column;
+  }
+
+  .admin-manage-main-actions {
+    padding: 14px 20px;
+  }
+
+  .admin-action-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .admin-manage-form {
+    padding: 22px 20px;
+  }
+
+  .doctor-schedule-management-block {
+    padding: 22px 20px;
+  }
+
+  .doctor-schedule-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-schedule-edit-row {
+    grid-template-columns: 1fr;
+  }
 
   .doctor-schedule-interval-card {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .doctor-schedule-actions { width: 100%; }
-  .interval-btn            { flex: 1; justify-content: center; }
+  .doctor-schedule-actions {
+    width: 100%;
+  }
 
-  .clinic-doctor-details {
+  .interval-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .admin-doctor-details {
     grid-template-columns: 1fr;
     padding: 0 20px 18px;
   }

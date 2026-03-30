@@ -34,6 +34,7 @@ import ClinicAppointments from "../pages/ClinicAppointments";
 import ClinicServices from "../pages/ClinicServices";
 import AdminServices from "../pages/AdminServices";
 import AdminSpecialties from "../pages/AdminSpecialties";
+import AdminManageDoctors from "../pages/AdminManageDoctors";
 
 function AppRouter() {
   return (
@@ -57,6 +58,15 @@ function AppRouter() {
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+        <Route
+          path="/admin/manage-doctors"
+          element={
+            <RoleProtectedRoute allowedRoles={["admin"]}>
+              <AdminManageDoctors />
+            </RoleProtectedRoute>
+          }
+        />
 
         <Route
           path="/doctor/appointments"

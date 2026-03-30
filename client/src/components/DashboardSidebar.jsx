@@ -44,7 +44,6 @@ function DashboardSidebar() {
     { to: "/clinic/create-doctor", label: "Create Doctor", icon: <FaUserDoctor /> },
     { to: "/clinic/manage-doctors", label: "Manage Doctors", icon: <FaStethoscope /> },
     { to: "/clinic/services", label: "Services", icon: <FaNotesMedical /> },
-    { to: "/clinic-profile", label: "Clinic Profile", icon: <FaHospital /> },
     { to: "/profile", label: "Profile", icon: <FaUser /> },
   ];
 
@@ -52,6 +51,7 @@ function DashboardSidebar() {
     { to: "/admin", label: "Overview", icon: <FaChartLine /> },
     { to: "/admin/create-clinic", label: "Create Clinic", icon: <FaClipboardCheck /> },
     { to: "/admin/create-doctor", label: "Create Doctor", icon: <FaUserDoctor /> },
+    { to: "/admin/manage-doctors", label: "Manage Doctors", icon: <FaUserDoctor /> },
     { to: "/admin/users", label: "Manage Users", icon: <FaUserShield /> },
     { to: "/admin/services", label: "Services Catalog", icon: <FaNotesMedical /> },
     { to: "/admin/specialties", label: "Specialties", icon: <FaStethoscope /> },

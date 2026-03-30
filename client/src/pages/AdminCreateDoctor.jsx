@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
-import {
-  FaArrowRight,
-  FaClipboardList,
-  FaEnvelope,
-  FaHospital,
-  FaLock,
-  FaUser,
-} from "react-icons/fa6";
+import { FaUser, FaEnvelope, FaLock, FaHospital, FaUserDoctor } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
+import WorkingHoursEditor from "../components/WorkingHoursEditor";
 import api from "../services/api";
+import { validateDoctorForm } from "../utils/formValidators";
 import "../styles/AdminCreateDoctor.css";
 
 function AdminCreateDoctor() {
   const [clinics, setClinics] = useState([]);
   const [specialties, setSpecialties] = useState([]);
+  const [workingHours, setWorkingHours] = useState([
+    { weekday: 1, startTime: "09:00", endTime: "15:00" },
+  ]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -22,48 +20,48 @@ function AdminCreateDoctor() {
     password: "",
     clinicId: "",
     specialtyIds: [],
-    description: "",
     experienceYears: "",
-    scheduleInfo: "",
+    description: "",
   });
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const loadOptions = async () => {
+    const loadData = async () => {
       try {
         const [clinicsRes, specialtiesRes] = await Promise.all([
           api.get("/admin/clinics/options"),
           api.get("/meta/specialties"),
         ]);
 
-        setClinics(clinicsRes.data);
-        setSpecialties(specialtiesRes.data);
-      } catch (err) {
-        setError("Failed to load clinics or specialties.");
+        setClinics(clinicsRes.data || []);
+        setSpecialties(specialtiesRes.data || []);
+      } catch {
+        setError("Failed to load form data.");
       }
     };
 
-    loadOptions();
+    loadData();
   }, []);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
-  const handleSpecialtyToggle = (id) => {
+  const toggleSpecialty = (specialtyId) => {
     setFormData((prev) => {
-      const exists = prev.specialtyIds.includes(id);
+      const exists = prev.specialtyIds.includes(specialtyId);
 
       return {
         ...prev,
         specialtyIds: exists
-          ? prev.specialtyIds.filter((item) => item !== id)
-          : [...prev.specialtyIds, id],
+          ? prev.specialtyIds.filter((id) => id !== specialtyId)
+          : [...prev.specialtyIds, specialtyId],
       };
     });
   };
@@ -73,15 +71,18 @@ function AdminCreateDoctor() {
     setError("");
     setSuccess("");
 
-    try {
-      const payload = {
-        ...formData,
-        clinicId: Number(formData.clinicId),
-        specialtyIds: formData.specialtyIds,
-        experienceYears: Number(formData.experienceYears) || 0,
-      };
+    const validationMessage = validateDoctorForm(formData, workingHours);
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
 
-      const response = await api.post("/admin/doctors", payload);
+    try {
+      const response = await api.post("/admin/doctors", {
+        ...formData,
+        workingHours,
+      });
+
       setSuccess(response.data.message || "Doctor created successfully.");
 
       setFormData({
@@ -91,12 +92,13 @@ function AdminCreateDoctor() {
         password: "",
         clinicId: "",
         specialtyIds: [],
-        description: "",
         experienceYears: "",
-        scheduleInfo: "",
+        description: "",
       });
+
+      setWorkingHours([{ weekday: 1, startTime: "09:00", endTime: "15:00" }]);
     } catch (err) {
-      setError(err.response?.data?.message || "Doctor creation failed.");
+      setError(err.response?.data?.message || "Failed to create doctor.");
     }
   };
 
@@ -105,19 +107,19 @@ function AdminCreateDoctor() {
       <main className="dashboard-screen">
         <div className="page-container dashboard-shell-grid">
           <DashboardSidebar />
-
+          
           <div className="dashboard-page-content">
             <section className="admin-doctor-page">
-              <div className="admin-doctor-header soft-card">
-                <h1>Create Doctor Account</h1>
-                <p>
-                  As administrator, you can create a doctor account and assign it
-                  to an existing clinic.
-                </p>
+              
+              <div className="soft-card admin-doctor-header">
+                <h1>Create Doctor</h1>
+                <p>Create a doctor account and set the structured weekly schedule.</p>
               </div>
 
-              <form className="admin-doctor-form-card soft-card" onSubmit={handleSubmit}>
+              <form className="soft-card admin-doctor-form-card" onSubmit={handleSubmit}>
                 <div className="admin-doctor-form-grid">
+                  
+                  {/* First Name */}
                   <div className="admin-doctor-input-group">
                     <label>First Name</label>
                     <div className="admin-doctor-input-wrapper">
@@ -126,11 +128,12 @@ function AdminCreateDoctor() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        placeholder="First name"
+                        placeholder="e.g. Ion"
                       />
                     </div>
                   </div>
 
+                  {/* Last Name */}
                   <div className="admin-doctor-input-group">
                     <label>Last Name</label>
                     <div className="admin-doctor-input-wrapper">
@@ -139,13 +142,14 @@ function AdminCreateDoctor() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        placeholder="Last name"
+                        placeholder="e.g. Popescu"
                       />
                     </div>
                   </div>
 
+                  {/* Email */}
                   <div className="admin-doctor-input-group">
-                    <label>Login Email</label>
+                    <label>Email Address</label>
                     <div className="admin-doctor-input-wrapper">
                       <FaEnvelope />
                       <input
@@ -153,13 +157,14 @@ function AdminCreateDoctor() {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="Doctor login email"
+                        placeholder="doctor@clinic.com"
                       />
                     </div>
                   </div>
 
+                  {/* Password */}
                   <div className="admin-doctor-input-group">
-                    <label>Temporary Password</label>
+                    <label>Password</label>
                     <div className="admin-doctor-input-wrapper">
                       <FaLock />
                       <input
@@ -167,95 +172,99 @@ function AdminCreateDoctor() {
                         type="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Temporary password"
+                        placeholder="Secure password"
                       />
                     </div>
                   </div>
 
+                  {/* Clinic Select */}
                   <div className="admin-doctor-input-group">
-                    <label>Clinic</label>
+                    <label>Assign to Clinic</label>
                     <div className="admin-doctor-select-wrapper">
                       <FaHospital />
-                      <select
-                        name="clinicId"
-                        value={formData.clinicId}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select clinic</option>
+                      <select name="clinicId" value={formData.clinicId} onChange={handleChange}>
+                        <option value="">Select a clinic...</option>
                         {clinics.map((clinic) => (
                           <option key={clinic.id} value={clinic.id}>
-                            {clinic.name} {clinic.city ? `- ${clinic.city}` : ""}
+                            {clinic.name}
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
 
+                  {/* Experience Years */}
                   <div className="admin-doctor-input-group">
-                    <label>Experience Years</label>
+                    <label>Experience (Years)</label>
                     <div className="admin-doctor-input-wrapper">
-                      <FaClipboardList />
+                      <FaUserDoctor />
                       <input
                         name="experienceYears"
                         type="number"
                         min="0"
                         value={formData.experienceYears}
                         onChange={handleChange}
-                        placeholder="Years of experience"
+                        placeholder="e.g. 5"
                       />
                     </div>
                   </div>
 
+                  {/* Description */}
                   <div className="admin-doctor-input-group full">
-                    <label>Specialties</label>
-                    <div className="admin-doctor-specialties-grid">
-                      {specialties.map((specialty) => (
-                        <label key={specialty.id} className="admin-doctor-specialty-pill">
-                          <input
-                            type="checkbox"
-                            checked={formData.specialtyIds.includes(specialty.id)}
-                            onChange={() => handleSpecialtyToggle(specialty.id)}
-                          />
-                          <span>{specialty.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="admin-doctor-input-group full">
-                    <label>Description</label>
+                    <label>Professional Description</label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
-                      placeholder="Doctor profile description"
+                      placeholder="Brief description of the doctor's background and expertise..."
                     />
                   </div>
 
+                  {/* Specialties Checkboxes */}
                   <div className="admin-doctor-input-group full">
-                    <label>Schedule Info</label>
-                    <textarea
-                      name="scheduleInfo"
-                      value={formData.scheduleInfo}
-                      onChange={handleChange}
-                      placeholder="Example: Monday 09:00 - 15:00, Tuesday 10:00 - 17:00"
-                    />
+                    <label>Specialties</label>
+                    <div className="admin-doctor-specialties-grid">
+                      {specialties.map((specialty) => {
+                        const isChecked = formData.specialtyIds.includes(specialty.id);
+                        return (
+                          <label 
+                            key={specialty.id} 
+                            className={`admin-doctor-specialty-pill ${isChecked ? "active" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSpecialty(specialty.id)}
+                            />
+                            {specialty.name}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                </div>
+
+                {/* Working Hours Editor */}
+                <div style={{ marginTop: '24px' }}>
+                  <WorkingHoursEditor
+                    workingHours={workingHours}
+                    setWorkingHours={setWorkingHours}
+                  />
                 </div>
 
                 {error && <p className="admin-doctor-message error">{error}</p>}
                 {success && <p className="admin-doctor-message success">{success}</p>}
 
                 <button type="submit" className="primary-btn admin-doctor-submit-btn">
-                  Create Doctor
-                  <FaArrowRight />
+                  Create Doctor Profile
                 </button>
               </form>
+
             </section>
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );

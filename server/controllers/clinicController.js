@@ -2,12 +2,23 @@ const bcrypt = require("bcrypt");
 const db = require("../config/db");
 const { createUser, findUserByEmail, findUserById } = require("../models/userModel");
 const { findClinicByUserId } = require("../models/clinicModel");
-const { createDoctorProfile, attachDoctorSpecialties } = require("../models/doctorModel");
+const {
+    createDoctorProfile,
+    attachDoctorSpecialties,
+    insertDoctorWorkingHours,
+    buildDoctorScheduleSummary,
+  } = require("../models/doctorModel");
 
-const normalizeIds = (value) => {
-  if (!Array.isArray(value)) return [];
-  return [...new Set(value.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0))];
-};
+  const {
+    isValidEmail,
+    isValidPassword,
+    isNonEmptyString,
+    isValidWorkingHoursArray,
+  } = require("../utils/validators");
+  const normalizeIds = (value) => {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0))];
+  };
 
 const getMyClinic = async (req, res) => {
   try {
@@ -29,38 +40,57 @@ const getMyClinic = async (req, res) => {
 };
 
 const createDoctorForOwnClinic = async (req, res) => {
-  const connection = await db.getConnection();
+  const db = require("../config/db");
+  const bcrypt = require("bcrypt");
+  const { findUserByEmail, createUser, findUserById } = require("../models/userModel");
+  const { findClinicByUserId } = require("../models/clinicModel");
 
   try {
-    const clinic = await findClinicByUserId(req.user.id);
-
-    if (!clinic) {
-      return res.status(404).json({
-        message: "Clinic profile not found for this account.",
-      });
-    }
-
     const {
       firstName,
       lastName,
       email,
       password,
       specialtyIds,
-      description,
       experienceYears,
-      scheduleInfo,
+      description,
+      workingHours,
     } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!isNonEmptyString(firstName, 2) || !isNonEmptyString(lastName, 2)) {
       return res.status(400).json({
-        message: "Missing required fields for doctor creation.",
+        message: "First name and last name are required.",
       });
     }
 
-    const normalizedSpecialtyIds = normalizeIds(specialtyIds);
-    if (normalizedSpecialtyIds.length === 0) {
+    if (!isValidEmail(email)) {
       return res.status(400).json({
-        message: "Please select at least one specialty.",
+        message: "Invalid email address.",
+      });
+    }
+
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        message: "Password must have at least 6 characters.",
+      });
+    }
+
+    if (!Array.isArray(specialtyIds) || specialtyIds.length === 0) {
+      return res.status(400).json({
+        message: "At least one specialty is required.",
+      });
+    }
+
+    if (!isValidWorkingHoursArray(workingHours)) {
+      return res.status(400).json({
+        message: "A valid structured working schedule is required.",
+      });
+    }
+
+    const clinic = await findClinicByUserId(req.user.id);
+    if (!clinic) {
+      return res.status(404).json({
+        message: "Clinic profile not found.",
       });
     }
 
@@ -71,57 +101,59 @@ const createDoctorForOwnClinic = async (req, res) => {
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const connection = await db.getConnection();
 
-    await connection.beginTransaction();
+    try {
+      await connection.beginTransaction();
 
-    const userId = await createUser(
-      {
-        firstName,
-        lastName,
-        email,
-        passwordHash,
-        role: "doctor",
-      },
-      connection
-    );
+      const passwordHash = await bcrypt.hash(password, 10);
 
-    const doctorId = await createDoctorProfile(
-      {
+      const userId = await createUser(
+        {
+          firstName,
+          lastName,
+          email,
+          passwordHash,
+          role: "doctor",
+        },
+        connection
+      );
+
+      const scheduleInfo = buildDoctorScheduleSummary(workingHours);
+
+      const doctorId = await createDoctorProfile(connection, {
         userId,
         clinicId: clinic.id,
         firstName,
         lastName,
-        description: description || null,
-        experienceYears: Number(experienceYears) || 0,
-        scheduleInfo: scheduleInfo || null,
-      },
-      connection
-    );
+        description,
+        experienceYears,
+        scheduleInfo,
+      });
 
-    await attachDoctorSpecialties(doctorId, normalizedSpecialtyIds, connection);
+      await attachDoctorSpecialties(connection, doctorId, specialtyIds);
+      await insertDoctorWorkingHours(connection, doctorId, workingHours);
 
-    await connection.commit();
+      await connection.commit();
 
-    const user = await findUserById(userId);
+      const createdUser = await findUserById(userId);
 
-    return res.status(201).json({
-      message: "Doctor created successfully for your clinic.",
-      doctor: {
-        id: doctorId,
-        clinicId: clinic.id,
-      },
-      user,
-    });
+      return res.status(201).json({
+        message: "Doctor created successfully.",
+        doctorId,
+        user: createdUser,
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
-    await connection.rollback();
-
     return res.status(500).json({
-      message: "Doctor creation failed.",
+      message: "Failed to create doctor.",
       error: error.message,
     });
-  } finally {
-    connection.release();
   }
 };
 

@@ -7,6 +7,7 @@ import {
   FaFilter,
   FaLocationDot,
   FaShieldHeart,
+  FaStethoscope,
   FaUserDoctor,
 } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
@@ -19,14 +20,19 @@ function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [clinics, setClinics] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [services, setServices] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [slotMeta, setSlotMeta] = useState(null);
   const [formData, setFormData] = useState({
     clinicId: "",
     doctorId: "",
+    serviceId: "",
     appointmentDate: "",
     appointmentTime: "",
     notes: "",
   });
   const [loading, setLoading] = useState(true);
+  const [slotLoading, setSlotLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -52,9 +58,69 @@ function Appointments() {
     }
   };
 
+  const loadClinicServices = async (clinicId) => {
+    if (!clinicId) {
+      setServices([]);
+      return;
+    }
+
+    try {
+      const response = await api.get("/public/services", {
+        params: { clinicId },
+      });
+      setServices(response.data);
+    } catch {
+      setServices([]);
+    }
+  };
+
+  const loadAvailableSlots = async (doctorId, appointmentDate, serviceId) => {
+    if (!doctorId || !appointmentDate || !serviceId) {
+      setAvailableSlots([]);
+      setSlotMeta(null);
+      return;
+    }
+
+    setSlotLoading(true);
+
+    try {
+      const response = await api.get(`/public/doctors/${doctorId}/available-slots`, {
+        params: {
+          date: appointmentDate,
+          serviceId,
+        },
+      });
+
+      setAvailableSlots(response.data.slots || []);
+      setSlotMeta(response.data);
+    } catch {
+      setAvailableSlots([]);
+      setSlotMeta(null);
+    } finally {
+      setSlotLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    loadClinicServices(formData.clinicId);
+  }, [formData.clinicId]);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      appointmentTime: "",
+    }));
+
+    loadAvailableSlots(
+      formData.doctorId,
+      formData.appointmentDate,
+      formData.serviceId
+    );
+  }, [formData.doctorId, formData.appointmentDate, formData.serviceId]);
 
   const filteredDoctors = useMemo(() => {
     if (!formData.clinicId) return [];
@@ -77,6 +143,27 @@ function Appointments() {
         ...prev,
         clinicId: value,
         doctorId: "",
+        serviceId: "",
+        appointmentDate: "",
+        appointmentTime: "",
+      }));
+      return;
+    }
+
+    if (name === "doctorId") {
+      setFormData((prev) => ({
+        ...prev,
+        doctorId: value,
+        appointmentTime: "",
+      }));
+      return;
+    }
+
+    if (name === "serviceId" || name === "appointmentDate") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        appointmentTime: "",
       }));
       return;
     }
@@ -84,6 +171,13 @@ function Appointments() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleSelectSlot = (slot) => {
+    setFormData((prev) => ({
+      ...prev,
+      appointmentTime: slot,
     }));
   };
 
@@ -107,10 +201,15 @@ function Appointments() {
       setFormData({
         clinicId: "",
         doctorId: "",
+        serviceId: "",
         appointmentDate: "",
         appointmentTime: "",
         notes: "",
       });
+
+      setServices([]);
+      setAvailableSlots([]);
+      setSlotMeta(null);
 
       await loadData();
     } catch (err) {
@@ -153,8 +252,7 @@ function Appointments() {
                   </h1>
 
                   <p className="appointments-subtitle">
-                    Book real appointments, review upcoming visits and keep your healthcare
-                    schedule organized in one connected workspace.
+                    Select only automatically generated valid slots based on doctor schedule and service duration.
                   </p>
 
                   <div className="appointments-actions">
@@ -194,7 +292,7 @@ function Appointments() {
               <section className="soft-card appointment-booking-card">
                 <div className="appointments-section-heading">
                   <h2>Book New Appointment</h2>
-                  <p>Create a new medical appointment using real clinics and doctors.</p>
+                  <p>Choose clinic, doctor, service and a generated valid slot.</p>
                 </div>
 
                 <form className="appointment-form-grid" onSubmit={handleCreateAppointment}>
@@ -228,6 +326,23 @@ function Appointments() {
                   </div>
 
                   <div className="appointment-form-group">
+                    <label>Service</label>
+                    <select
+                      name="serviceId"
+                      value={formData.serviceId}
+                      onChange={handleChange}
+                      disabled={!formData.clinicId}
+                    >
+                      <option value="">Select service</option>
+                      {services.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.name} ({service.duration_minutes || 0} min)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="appointment-form-group">
                     <label>Date</label>
                     <input
                       type="date"
@@ -238,14 +353,45 @@ function Appointments() {
                     />
                   </div>
 
-                  <div className="appointment-form-group">
-                    <label>Time</label>
-                    <input
-                      type="time"
-                      name="appointmentTime"
-                      value={formData.appointmentTime}
-                      onChange={handleChange}
-                    />
+                  <div className="appointment-form-group full">
+                    <label>Available Slots</label>
+
+                    <div className="soft-card doctor-working-hours-box">
+                      {!formData.doctorId || !formData.serviceId || !formData.appointmentDate ? (
+                        <p>Select doctor, service and date to see available slots.</p>
+                      ) : slotLoading ? (
+                        <p>Loading available slots...</p>
+                      ) : availableSlots.length === 0 ? (
+                        <p>No available slots for the selected date.</p>
+                      ) : (
+                        <>
+                          <div className="doctor-working-hours-list">
+                            {slotMeta?.workingIntervals?.map((interval) => (
+                              <span key={interval.id} className="status-badge confirmed">
+                                {interval.start_time} - {interval.end_time}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="appointment-duration-hint">
+                            Service duration: {slotMeta?.durationMinutes || 0} minutes
+                          </p>
+
+                          <div className="available-slots-grid">
+                            {availableSlots.map((slot) => (
+                              <button
+                                key={slot}
+                                type="button"
+                                className={`slot-chip ${formData.appointmentTime === slot ? "active" : ""}`}
+                                onClick={() => handleSelectSlot(slot)}
+                              >
+                                {slot}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   <div className="appointment-form-group full">
@@ -304,6 +450,9 @@ function Appointments() {
                                 Dr. {item.doctor_first_name} {item.doctor_last_name}
                               </h3>
                               <p>{item.clinic_name}</p>
+                              <p className="appointment-service-line">
+                                <FaStethoscope /> {item.service_name || "Service not set"}
+                              </p>
 
                               <div className="appointment-meta">
                                 <span>
@@ -364,6 +513,9 @@ function Appointments() {
                                 Dr. {item.doctor_first_name} {item.doctor_last_name}
                               </h3>
                               <p>{item.clinic_name}</p>
+                              <p className="appointment-service-line">
+                                <FaStethoscope /> {item.service_name || "Service not set"}
+                              </p>
 
                               <div className="appointment-meta">
                                 <span>

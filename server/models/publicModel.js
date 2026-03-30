@@ -284,6 +284,28 @@ const listPublicServices = async (filters = {}) => {
   return rows;
 };
 
+const getDoctorWorkingHoursByDate = async (doctorId, appointmentDate) => {
+  const date = new Date(`${appointmentDate}T00:00:00`);
+  const weekday = date.getDay();
+
+  const [rows] = await db.execute(
+    `
+    SELECT
+      id,
+      doctor_id,
+      weekday,
+      start_time,
+      end_time
+    FROM doctor_working_hours
+    WHERE doctor_id = ? AND weekday = ?
+    ORDER BY start_time ASC
+    `,
+    [doctorId, weekday]
+  );
+
+  return rows;
+};
+
 module.exports = {
   listPublicClinics,
   getPublicClinicById,
@@ -292,4 +314,5 @@ module.exports = {
   listPublicDoctors,
   getPublicDoctorById,
   listPublicServices,
+  getDoctorWorkingHoursByDate,
 };

@@ -26,3 +26,37 @@ export const validateReviewForm = (formData) => {
 
   return "";
 };
+
+export const validateDoctorForm = (formData, workingHours) => {
+  if (!formData.firstName || formData.firstName.trim().length < 2) {
+    return "First name must have at least 2 characters.";
+  }
+
+  if (!formData.lastName || formData.lastName.trim().length < 2) {
+    return "Last name must have at least 2 characters.";
+  }
+
+  if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    return "Please enter a valid email address.";
+  }
+
+  if (!formData.password || formData.password.length < 6) {
+    return "Password must have at least 6 characters.";
+  }
+
+  if (!Array.isArray(formData.specialtyIds) || formData.specialtyIds.length === 0) {
+    return "At least one specialty is required.";
+  }
+
+  if (!Array.isArray(workingHours) || workingHours.length === 0) {
+    return "At least one working interval is required.";
+  }
+
+  for (const item of workingHours) {
+    if (item.startTime >= item.endTime) {
+      return "Each working interval must have start time earlier than end time.";
+    }
+  }
+
+  return "";
+};

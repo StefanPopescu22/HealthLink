@@ -73,6 +73,8 @@
   border: none;
   background: transparent;
   outline: none;
+  font-family: inherit;
+  font-size: 1rem;
 }
 
 .clinic-doctor-input-group textarea {
@@ -92,16 +94,30 @@
   gap: 12px;
 }
 
+/* Stiluri noi pentru Checkbox-uri tip Pill */
 .clinic-doctor-specialty-pill {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   min-height: 46px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 999px;
   background: #f8fbff;
   border: 1px solid var(--color-border);
   color: var(--color-text-soft);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.clinic-doctor-specialty-pill input[type="checkbox"] {
+  display: none;
+}
+
+.clinic-doctor-specialty-pill.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
 
 .clinic-doctor-message {
@@ -119,6 +135,7 @@
 
 .clinic-doctor-submit-btn {
   margin-top: 22px;
+  width: auto;
 }
 
 @media (max-width: 768px) {
@@ -138,4 +155,25 @@
   .clinic-doctor-submit-btn {
     width: 100%;
   }
+}
+
+/* --- Stiluri noi pentru Erori Inline --- */
+
+/* Textul de eroare de sub input */
+.clinic-doctor-field-error {
+  color: var(--color-danger, #e11d48); /* Folosește roșul din variabilele tale sau fallback */
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 4px;
+  padding-left: 4px;
+}
+
+/* Face conturul wrapper-ului roșu dacă există o eroare pe câmp */
+.clinic-doctor-input-wrapper.has-error {
+  border-color: var(--color-danger, #e11d48);
+  background: #fff1f2; /* Un fundal roșiatic deschis pentru accent */
+}
+
+.clinic-doctor-input-wrapper.has-error svg {
+  color: var(--color-danger, #e11d48);
 }

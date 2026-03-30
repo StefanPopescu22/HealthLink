@@ -46,6 +46,54 @@ const isTodayOrFutureDate = (value) => {
   return selected >= todayOnly;
 };
 
+const isValidWeekday = (value) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed <= 6;
+};
+
+const isValidWorkingHoursArray = (workingHours) => {
+  if (!Array.isArray(workingHours) || workingHours.length === 0) {
+    return false;
+  }
+
+  const normalized = workingHours.map((item) => ({
+    weekday: Number(item.weekday),
+    startTime: item.startTime,
+    endTime: item.endTime,
+  }));
+
+  for (const item of normalized) {
+    if (!isValidWeekday(item.weekday)) return false;
+    if (!isValidTimeString(item.startTime)) return false;
+    if (!isValidTimeString(item.endTime)) return false;
+    if (item.startTime >= item.endTime) return false;
+  }
+
+  const byDay = {};
+
+  for (const item of normalized) {
+    if (!byDay[item.weekday]) byDay[item.weekday] = [];
+    byDay[item.weekday].push(item);
+  }
+
+  for (const weekday of Object.keys(byDay)) {
+    const intervals = byDay[weekday].sort((a, b) =>
+      a.startTime.localeCompare(b.startTime)
+    );
+
+    for (let i = 0; i < intervals.length - 1; i++) {
+      const current = intervals[i];
+      const next = intervals[i + 1];
+
+      if (current.endTime > next.startTime) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
 module.exports = {
   isNonEmptyString,
   normalizeText,
@@ -56,4 +104,6 @@ module.exports = {
   isValidDateString,
   isValidTimeString,
   isTodayOrFutureDate,
+  isValidWeekday,
+  isValidWorkingHoursArray,
 };
