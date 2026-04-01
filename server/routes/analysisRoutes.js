@@ -2,17 +2,21 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  uploadMedicalAnalysis,
+  createMedicalAnalysisForPatient,
   getMyAnalyses,
-  deleteMyAnalysis,
+  updatePatientAnalysis,
+  removeMyAnalysis, 
 } = require("../controllers/analysisController");
-const { authenticateToken, authorizeRoles } = require("../middleware/authMiddleware");
+
+const { authenticateToken } = require("../middleware/authMiddleware");
 const { analysisUpload } = require("../middleware/uploadMiddleware");
 
-router.use(authenticateToken, authorizeRoles("patient"));
+router.use(authenticateToken);
 
 router.get("/my", getMyAnalyses);
-router.post("/", analysisUpload.single("file"), uploadMedicalAnalysis);
-router.delete("/:id", deleteMyAnalysis);
+router.post("/upload", analysisUpload.single("file"), createMedicalAnalysisForPatient);
+router.put("/:analysisId", analysisUpload.single("file"), updatePatientAnalysis);
+
+router.delete("/:id", removeMyAnalysis); 
 
 module.exports = router;

@@ -35,6 +35,7 @@ import ClinicServices from "../pages/ClinicServices";
 import AdminServices from "../pages/AdminServices";
 import AdminSpecialties from "../pages/AdminSpecialties";
 import AdminManageDoctors from "../pages/AdminManageDoctors";
+import ClinicPatientFiles from "../pages/ClinicPatientFiles";
 
 function AppRouter() {
   return (
@@ -58,6 +59,16 @@ function AppRouter() {
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
+
+
+        <Route
+          path="/clinic/patients/:patientUserId/files"
+          element={
+            <RoleProtectedRoute allowedRoles={["clinic"]}>  
+              <ClinicPatientFiles />
+            </RoleProtectedRoute>
+          }
+        />  
 
         <Route
           path="/admin/manage-doctors"

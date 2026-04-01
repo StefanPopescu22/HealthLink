@@ -62,3 +62,43 @@
     grid-template-columns: 1fr;
   }
 }
+
+.doctor-patient-files-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.doctor-patient-files-upload-grid form {
+  display: grid;
+  gap: 10px;
+}
+
+.doctor-patient-files-upload-grid input {
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  outline: none;
+}
+
+.doctor-file-edit-form {
+  display: grid;
+  gap: 10px;
+}
+
+.doctor-file-edit-form input {
+  border: 1px solid var(--color-border);
+  background: #f8fbff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .doctor-patient-files-upload-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,45 +1,74 @@
 const db = require("../config/db");
 
 const createMedicalDocument = async ({
-  userId,
+  patientUserId,
+  clinicId,
+  doctorId,
+  appointmentId,
   title,
   category,
   fileName,
   filePath,
+  createdByUserId,
 }) => {
   const [result] = await db.execute(
     `
     INSERT INTO medical_documents
-    (user_id, title, category, file_name, file_path)
-    VALUES (?, ?, ?, ?, ?)
+    (user_id, clinic_id, doctor_id, appointment_id, title, category, file_name, file_path, created_by_user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
-    [userId, title, category, fileName, filePath]
+    [
+      patientUserId,
+      clinicId || null,
+      doctorId || null,
+      appointmentId || null,
+      title,
+      category || null,
+      fileName,
+      filePath,
+      createdByUserId || null,
+    ]
   );
 
   return result.insertId;
 };
 
-const getMedicalDocumentsByUser = async (userId) => {
+const getDocumentsByPatient = async (patientUserId) => {
   const [rows] = await db.execute(
     `
     SELECT
-      id,
-      title,
-      category,
-      file_name,
-      file_path,
-      uploaded_at
-    FROM medical_documents
-    WHERE user_id = ?
-    ORDER BY uploaded_at DESC
+      md.id,
+      md.title,
+      md.category,
+      md.file_name,
+      md.file_path,
+      md.uploaded_at,
+      md.updated_at,
+      c.name AS clinic_name,
+      d.first_name AS doctor_first_name,
+      d.last_name AS doctor_last_name,
+      cu.first_name AS created_by_first_name,
+      cu.last_name AS created_by_last_name,
+      cu.role AS created_by_role
+    FROM medical_documents md
+    LEFT JOIN clinics c ON c.id = md.clinic_id
+    LEFT JOIN doctors d ON d.id = md.doctor_id
+    LEFT JOIN users cu ON cu.id = md.created_by_user_id
+    WHERE md.user_id = ?
+    ORDER BY md.uploaded_at DESC
     `,
-    [userId]
+    [patientUserId]
   );
 
   return rows;
 };
 
-const getMedicalDocumentById = async (documentId) => {
+// --- ACEASTA ESTE FUNCȚIA PE CARE O CĂUTA DOCTORUL ---
+const getDoctorDocumentsByPatient = async (patientUserId) => {
+  return await getDocumentsByPatient(patientUserId);
+};
+
+const getDocumentById = async (documentId) => {
   const [rows] = await db.execute(
     `
     SELECT *
@@ -50,6 +79,42 @@ const getMedicalDocumentById = async (documentId) => {
   );
 
   return rows[0];
+};
+
+const updateMedicalDocument = async ({
+  documentId,
+  title,
+  category,
+  fileName,
+  filePath,
+  clinicId,
+  doctorId,
+  appointmentId,
+}) => {
+  await db.execute(
+    `
+    UPDATE medical_documents
+    SET
+      title = ?,
+      category = ?,
+      file_name = COALESCE(?, file_name),
+      file_path = COALESCE(?, file_path),
+      clinic_id = ?,
+      doctor_id = ?,
+      appointment_id = ?
+    WHERE id = ?
+    `,
+    [
+      title,
+      category || null,
+      fileName || null,
+      filePath || null,
+      clinicId || null,
+      doctorId || null,
+      appointmentId || null,
+      documentId,
+    ]
+  );
 };
 
 const deleteMedicalDocument = async (documentId) => {
@@ -64,7 +129,9 @@ const deleteMedicalDocument = async (documentId) => {
 
 module.exports = {
   createMedicalDocument,
-  getMedicalDocumentsByUser,
-  getMedicalDocumentById,
+  getDocumentsByPatient,
+  getDoctorDocumentsByPatient, // EXPORTAT ACUM
+  getDocumentById,
+  updateMedicalDocument,
   deleteMedicalDocument,
 };

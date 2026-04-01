@@ -11,6 +11,7 @@ const {
   getAdminUsers,
   blockUser,
   unblockUser,
+  deleteUser, 
 } = require("../controllers/adminUsersController");
 const {
   getAdminServices,
@@ -42,6 +43,7 @@ router.get("/dashboard", getAdminDashboard);
 router.get("/users", getAdminUsers);
 router.patch("/users/:userId/block", blockUser);
 router.patch("/users/:userId/unblock", unblockUser);
+router.delete("/users/:userId", deleteUser); 
 
 router.get("/clinics/options", getClinicOptions);
 router.post("/clinics", createClinic);

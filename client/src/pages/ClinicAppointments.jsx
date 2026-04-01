@@ -3,6 +3,7 @@ import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/ClinicAppointments.css";
+import { Link } from "react-router-dom";
 
 function ClinicAppointments() {
   const [data, setData] = useState(null);
@@ -63,6 +64,10 @@ function ClinicAppointments() {
                       <span>{item.appointment_date} · {item.appointment_time}</span>
                       <strong>{item.status}</strong>
 
+                      <Link to={`/clinic/patients/${item.patient_user_id}/files`} className="secondary-btn">
+                        Review Files
+                      </Link>
+
                       <div className="clinic-appointment-actions">
                         <button className="secondary-btn" onClick={() => updateStatus(item.id, "confirmed")}>
                           Confirm
@@ -73,6 +78,7 @@ function ClinicAppointments() {
                         <button className="secondary-btn" onClick={() => updateStatus(item.id, "cancelled")}>
                           Cancel
                         </button>
+                        
                       </div>
                     </article>
                   ))}

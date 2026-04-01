@@ -44,8 +44,19 @@ const getUserById = async (userId) => {
   return rows[0];
 };
 
+const deleteUserById = async (userId) => {
+  await db.execute(
+    `
+    DELETE FROM users
+    WHERE id = ?
+    `,
+    [userId]
+  );
+};
+
 module.exports = {
   getAllUsersForAdmin,
   setUserBlockedState,
   getUserById,
+  deleteUserById, 
 };
