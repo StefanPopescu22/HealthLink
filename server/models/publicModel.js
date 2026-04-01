@@ -144,7 +144,7 @@ const getClinicReviews = async (clinicId) => {
 };
 
 const listPublicDoctors = async (filters = {}) => {
-  const { q, specialty, clinicId } = filters;
+  const { q, specialty, clinicId, specialtyId, serviceId } = filters;
 
   let sql = `
     SELECT
@@ -193,6 +193,29 @@ const listPublicDoctors = async (filters = {}) => {
     params.push(Number(clinicId));
   }
 
+  if (specialtyId) {
+    sql += `
+      AND EXISTS (
+        SELECT 1
+        FROM doctor_specialties ds2
+        WHERE ds2.doctor_id = d.id AND ds2.specialty_id = ?
+      )
+    `;
+    params.push(Number(specialtyId));
+  }
+
+  if (serviceId) {
+    sql += `
+      AND EXISTS (
+        SELECT 1
+        FROM services srv
+        INNER JOIN doctor_specialties ds3 ON ds3.specialty_id = srv.specialty_id
+        WHERE ds3.doctor_id = d.id AND srv.id = ?
+      )
+    `;
+    params.push(Number(serviceId));
+  }
+
   sql += `
     GROUP BY d.id
     ORDER BY d.first_name ASC, d.last_name ASC
@@ -236,18 +259,21 @@ const getPublicDoctorById = async (doctorId) => {
 };
 
 const listPublicServices = async (filters = {}) => {
-  const { q, category, clinicId } = filters;
+  const { q, category, clinicId, specialtyId } = filters;
 
   let sql = `
     SELECT
       s.id,
       s.name,
+      s.specialty_id,
+      sp.name AS specialty_name,
       s.category,
       s.description,
       s.duration_minutes,
       COUNT(DISTINCT cs.clinic_id) AS clinics_count,
       MIN(cs.price) AS starting_price
     FROM services s
+    LEFT JOIN specialties sp ON sp.id = s.specialty_id
     LEFT JOIN clinic_services cs ON cs.service_id = s.id
     WHERE 1 = 1
   `;
@@ -262,6 +288,11 @@ const listPublicServices = async (filters = {}) => {
   if (category) {
     sql += ` AND s.category LIKE ? `;
     params.push(`%${category}%`);
+  }
+
+  if (specialtyId) {
+    sql += ` AND s.specialty_id = ? `;
+    params.push(Number(specialtyId));
   }
 
   if (clinicId) {
@@ -281,6 +312,26 @@ const listPublicServices = async (filters = {}) => {
   `;
 
   const [rows] = await db.query(sql, params);
+  return rows;
+};
+
+const listPublicSpecialties = async () => {
+  const [rows] = await db.execute(
+    `
+    SELECT
+      s.id,
+      s.name,
+      s.description,
+      COUNT(DISTINCT ds.doctor_id) AS doctors_count,
+      COUNT(DISTINCT srv.id) AS services_count
+    FROM specialties s
+    LEFT JOIN doctor_specialties ds ON ds.specialty_id = s.id
+    LEFT JOIN services srv ON srv.specialty_id = s.id
+    GROUP BY s.id
+    ORDER BY s.name ASC
+    `
+  );
+
   return rows;
 };
 
@@ -314,5 +365,6 @@ module.exports = {
   listPublicDoctors,
   getPublicDoctorById,
   listPublicServices,
+  listPublicSpecialties,
   getDoctorWorkingHoursByDate,
 };

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FaArrowRight,
   FaClock,
-  FaFilter,
   FaShieldHeart,
   FaStethoscope,
 } from "react-icons/fa6";
@@ -65,7 +65,7 @@ function Services() {
               </h1>
 
               <p className="services-subtitle">
-                Search services by name and category using live platform data.
+                Click a service and discover doctors relevant to that service specialty.
               </p>
             </div>
           </section>
@@ -100,7 +100,7 @@ function Services() {
                   </div>
 
                   <h2>{service.name}</h2>
-                  <p className="service-category">{service.category}</p>
+                  <p className="service-category">{service.specialty_name || "No specialty linked"}</p>
                   <p className="service-description">
                     {service.description || "No description available."}
                   </p>
@@ -116,10 +116,13 @@ function Services() {
                     </span>
                   </div>
 
-                  <button className="primary-btn service-btn">
-                    Select Service
+                  <Link
+                    to={`/doctors?serviceId=${service.id}`}
+                    className="primary-btn service-btn"
+                  >
+                    Learn More
                     <FaArrowRight />
-                  </button>
+                  </Link>
                 </article>
               ))}
             </section>

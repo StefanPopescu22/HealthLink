@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-// 1. Importăm controllerele
 const { getClinicPatientFilesController } = require("../controllers/clinicPatientFilesController");
 const { getMyClinic, createDoctorForOwnClinic } = require("../controllers/clinicController");
 const { getClinicDashboard } = require("../controllers/dashboardController");
@@ -21,33 +20,38 @@ const {
   deleteClinicDoctorSchedule,
 } = require("../controllers/doctorScheduleController");
 
-// 2. Importăm Middleware-ul de autentificare
 const { authenticateToken, authorizeRoles } = require("../middleware/authMiddleware");
 
-// --- IMPORTANT: Aplicăm protecția ÎNAINTE de rute ---
-// Toate rutele de mai jos vor cere login și rolul de "clinic"
+const {
+  getClinicSpecialties,
+  createClinicSpecialty,
+  createClinicServiceCatalogEntry,
+} = require("../controllers/clinicCatalogController");
+
+
 router.use(authenticateToken, authorizeRoles("clinic"));
 
-// 3. Definirea Rutelor
+router.get("/specialties", getClinicSpecialties);
+router.post("/specialties", createClinicSpecialty);
+router.post("/services/catalog", createClinicServiceCatalogEntry); 
 
-// Profil Clinică & Dashboard
+// Profil și Dashboard
 router.get("/me", getMyClinic);
 router.get("/dashboard", getClinicDashboard);
 
-// Pacienți & Fișiere (Ruta care dădea eroare 500)
-// Acum req.user va fi populat corect de authenticateToken
+// Fișiere Pacienți
 router.get("/patients/:patientUserId/files", getClinicPatientFilesController);
 
-// Programări Clinica
+// Programări
 router.get("/appointments", getMyClinicAppointments);
 router.patch("/appointments/:appointmentId/status", changeClinicAppointmentStatus);
 
-// Management Doctori (în cadrul clinicii)
+// Management Doctori
 router.get("/doctors", getClinicDoctors);
 router.post("/doctors", createDoctorForOwnClinic);
 router.put("/doctors/:doctorId", editClinicDoctor);
 
-// Servicii Clinică
+// Management Servicii (Legarea de clinica)
 router.get("/services", getMyClinicServices);
 router.post("/services", createClinicService);
 router.put("/services/:clinicServiceId", editClinicService);

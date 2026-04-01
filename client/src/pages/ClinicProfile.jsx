@@ -60,7 +60,10 @@ function ClinicProfile() {
       setIsFavorite(favList.some((item) => String(item.id) === String(id)));
       if (reviewRes.data) {
         setMyReview(reviewRes.data);
-        setReviewForm({ rating: String(reviewRes.data.rating), comment: reviewRes.data.comment || "" });
+        setReviewForm({
+          rating: String(reviewRes.data.rating),
+          comment: reviewRes.data.comment || "",
+        });
       } else {
         setMyReview(null);
         setReviewForm({ rating: "5", comment: "" });
@@ -70,8 +73,13 @@ function ClinicProfile() {
     }
   };
 
-  useEffect(() => { loadClinic(); }, [id]);
-  useEffect(() => { loadPatientExtras(); }, [user, id]);
+  useEffect(() => {
+    loadClinic();
+  }, [id]);
+
+  useEffect(() => {
+    loadPatientExtras();
+  }, [user, id]);
 
   const handleFavoriteToggle = async () => {
     try {
@@ -92,9 +100,13 @@ function ClinicProfile() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); setError("");
+    setMessage("");
+    setError("");
     const validationMessage = validateReviewForm(reviewForm);
-    if (validationMessage) { setError(validationMessage); return; }
+    if (validationMessage) {
+      setError(validationMessage);
+      return;
+    }
     try {
       if (myReview) {
         await api.put(`/reviews/${myReview.id}`, reviewForm);
@@ -112,12 +124,14 @@ function ClinicProfile() {
 
   const handleReviewDelete = async () => {
     if (!myReview) return;
-    setMessage(""); setError("");
+    setMessage("");
+    setError("");
     try {
       await api.delete(`/reviews/${myReview.id}`);
       setMessage("Review deleted successfully.");
+      setMyReview(null);
+      setReviewForm({ rating: "5", comment: "" });
       await loadClinic();
-      await loadPatientExtras();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete review.");
     }
@@ -129,7 +143,7 @@ function ClinicProfile() {
         <main className="clinic-profile-page">
           <div className="page-container">
             <div className="clinic-profile-skeleton-hero" />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 20 }}>
+            <div className="clinic-profile-skeleton-grid">
               <div className="clinic-profile-skeleton-block" />
               <div className="clinic-profile-skeleton-block" />
             </div>
@@ -157,9 +171,16 @@ function ClinicProfile() {
   }
 
   const { clinic, doctors, reviews } = data;
-  const avgRating = reviews.length
-    ? (reviews.reduce((s, r) => s + parseFloat(r.rating || 0), 0) / reviews.length).toFixed(1)
-    : clinic.rating || "0.0";
+
+  const avgRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((s, r) => s + parseFloat(r.rating || 0), 0) /
+          reviews.length
+        ).toFixed(1)
+      : parseFloat(clinic.rating || 0).toFixed(1);
+
+  const roundedStars = Math.round(parseFloat(avgRating));
 
   return (
     <>
@@ -179,7 +200,9 @@ function ClinicProfile() {
                 </div>
                 <div>
                   <h1>{clinic.name}</h1>
-                  <p className="clinic-type-label">{clinic.clinic_type}</p>
+                  {clinic.clinic_type && (
+                    <p className="clinic-type-label">{clinic.clinic_type}</p>
+                  )}
                 </div>
               </div>
 
@@ -194,11 +217,13 @@ function ClinicProfile() {
                 </span>
                 <span>
                   <FaUserDoctor />
-                  {clinic.doctors_count || 0} doctors
+                  {clinic.doctors_count || 0}{" "}
+                  {clinic.doctors_count === 1 ? "doctor" : "doctors"}
                 </span>
                 <span>
                   <FaStar />
-                  {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                  {reviews.length}{" "}
+                  {reviews.length === 1 ? "review" : "reviews"}
                 </span>
               </div>
 
@@ -251,17 +276,21 @@ function ClinicProfile() {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <FaStar
                         key={i}
-                        style={{ color: i < Math.round(parseFloat(avgRating)) ? "#f59e0b" : "#e5e7eb" }}
+                        style={{
+                          color: i < roundedStars ? "#f59e0b" : "#e5e7eb",
+                        }}
                       />
                     ))}
                   </div>
-                  <span>{reviews.length} patient {reviews.length === 1 ? "review" : "reviews"}</span>
+                  <span>
+                    {reviews.length} patient{" "}
+                    {reviews.length === 1 ? "review" : "reviews"}
+                  </span>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ── Review form ─────────────────────────────────── */}
           {user?.role === "patient" && (
             <section className="soft-card clinic-review-form-card">
               <div className="clinic-review-form-header">
@@ -280,7 +309,11 @@ function ClinicProfile() {
                 <div className="clinic-review-form-row">
                   <div className="clinic-review-field">
                     <label>Rating</label>
-                    <select name="rating" value={reviewForm.rating} onChange={handleReviewChange}>
+                    <select
+                      name="rating"
+                      value={reviewForm.rating}
+                      onChange={handleReviewChange}
+                    >
                       <option value="5">⭐⭐⭐⭐⭐ — Excellent (5)</option>
                       <option value="4">⭐⭐⭐⭐ — Good (4)</option>
                       <option value="3">⭐⭐⭐ — Average (3)</option>
@@ -306,7 +339,11 @@ function ClinicProfile() {
                     {myReview ? "Update Review" : "Submit Review"}
                   </button>
                   {myReview && (
-                    <button type="button" className="clinic-delete-review-btn" onClick={handleReviewDelete}>
+                    <button
+                      type="button"
+                      className="clinic-delete-review-btn"
+                      onClick={handleReviewDelete}
+                    >
                       <FaXmark />
                       Delete Review
                     </button>
@@ -314,12 +351,19 @@ function ClinicProfile() {
                 </div>
               </form>
 
-              {message && <p className="clinic-review-message success"><FaCheck /> {message}</p>}
-              {error   && <p className="clinic-review-message error"><FaXmark /> {error}</p>}
+              {message && (
+                <p className="clinic-review-message success">
+                  <FaCheck /> {message}
+                </p>
+              )}
+              {error && (
+                <p className="clinic-review-message error">
+                  <FaXmark /> {error}
+                </p>
+              )}
             </section>
           )}
 
-          {/* ── Content grid ────────────────────────────────── */}
           <section className="clinic-profile-content">
             <div className="clinic-profile-left">
               <article className="soft-card clinic-section-card">
@@ -342,7 +386,9 @@ function ClinicProfile() {
                             <FaUserDoctor />
                           </div>
                           <div>
-                            <h3>Dr. {doctor.first_name} {doctor.last_name}</h3>
+                            <h3>
+                              Dr. {doctor.first_name} {doctor.last_name}
+                            </h3>
                             <p>
                               <FaStethoscope />
                               {doctor.specialties || "No specialties assigned"}
@@ -354,7 +400,10 @@ function ClinicProfile() {
                           </div>
                         </div>
                         <div className="clinic-doctor-right">
-                          <Link to={`/doctors/${doctor.id}`} className="clinic-doctor-link">
+                          <Link
+                            to={`/doctors/${doctor.id}`}
+                            className="clinic-doctor-link"
+                          >
                             View profile <FaArrowRight />
                           </Link>
                         </div>
@@ -371,7 +420,9 @@ function ClinicProfile() {
                   <h2>Patient Reviews</h2>
                   <p>
                     {reviews.length > 0
-                      ? `${reviews.length} verified ${reviews.length === 1 ? "review" : "reviews"} from patients.`
+                      ? `${reviews.length} verified ${
+                          reviews.length === 1 ? "review" : "reviews"
+                        } from patients.`
                       : "No reviews yet — be the first to share your experience."}
                   </p>
                 </div>

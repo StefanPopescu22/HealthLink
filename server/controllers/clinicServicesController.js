@@ -3,6 +3,7 @@ const {
   addClinicService,
   updateClinicService,
   deleteClinicService,
+  addCatalogService, 
 } = require("../models/clinicServicesModel");
 
 const getMyClinicServices = async (req, res) => {
@@ -111,9 +112,42 @@ const removeClinicService = async (req, res) => {
   }
 };
 
+// --- FUNCȚIA NOUĂ PENTRU CREAREA UNUI SERVICIU ÎN CATALOG ---
+const createCatalogService = async (req, res) => {
+  try {
+    // Extragem datele din request (adaptează numele variabilelor dacă în frontend le-ai numit altfel)
+    const { name, specialtyId, description } = req.body;
+
+    if (!name || !specialtyId) {
+      return res.status(400).json({
+        message: "Service name and specialty ID are required.",
+      });
+    }
+
+    // Apelăm modelul pentru a salva serviciul în baza de date
+    // (vezi nota de mai jos despre models/clinicServicesModel.js)
+    const result = await addCatalogService({
+      name,
+      specialtyId: Number(specialtyId),
+      description: description || null,
+    });
+
+    return res.status(201).json({
+      message: "Catalog service created successfully.",
+      serviceId: result.insertId,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to create catalog service.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getMyClinicServices,
   createClinicService,
   editClinicService,
   removeClinicService,
+  createCatalogService, // <-- Funcția exportată corect
 };

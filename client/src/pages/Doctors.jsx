@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   FaMagnifyingGlass,
   FaShieldHeart,
@@ -11,13 +11,17 @@ import api from "../services/api";
 import "../styles/Doctors.css";
 
 function Doctors() {
+  const [searchParams] = useSearchParams();
+
   const [doctors, setDoctors] = useState([]);
+  const [clinics, setClinics] = useState([]);
   const [filters, setFilters] = useState({
     q: "",
     specialty: "",
     clinicId: "",
+    specialtyId: searchParams.get("specialtyId") || "",
+    serviceId: searchParams.get("serviceId") || "",
   });
-  const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -36,7 +40,11 @@ function Doctors() {
   };
 
   useEffect(() => {
-    loadDoctors();
+    loadDoctors({
+      ...filters,
+      specialtyId: searchParams.get("specialtyId") || "",
+      serviceId: searchParams.get("serviceId") || "",
+    });
 
     const loadClinics = async () => {
       try {
@@ -48,7 +56,7 @@ function Doctors() {
     };
 
     loadClinics();
-  }, []);
+  }, [searchParams]);
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({
@@ -78,7 +86,7 @@ function Doctors() {
               </h1>
 
               <p className="doctors-subtitle">
-                Search doctors by name, specialty and clinic using real platform data.
+                Doctors can be filtered directly from specialties and services pages.
               </p>
             </div>
           </section>

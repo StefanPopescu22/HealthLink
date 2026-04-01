@@ -6,11 +6,14 @@ const getAllServices = async () => {
     SELECT
       s.id,
       s.name,
+      s.specialty_id,
+      sp.name AS specialty_name,
       s.category,
       s.description,
       s.duration_minutes,
       COUNT(DISTINCT cs.clinic_id) AS clinics_count
     FROM services s
+    LEFT JOIN specialties sp ON sp.id = s.specialty_id
     LEFT JOIN clinic_services cs ON cs.service_id = s.id
     GROUP BY s.id
     ORDER BY s.name ASC
@@ -20,26 +23,53 @@ const getAllServices = async () => {
   return rows;
 };
 
-const createService = async ({ name, category, description, durationMinutes }) => {
+const createService = async ({
+  name,
+  specialtyId,
+  category,
+  description,
+  durationMinutes,
+}) => {
   const [result] = await db.execute(
     `
-    INSERT INTO services (name, category, description, duration_minutes)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO services (name, specialty_id, category, description, duration_minutes)
+    VALUES (?, ?, ?, ?, ?)
     `,
-    [name, category, description || null, Number(durationMinutes) || 30]
+    [
+      name,
+      specialtyId || null,
+      category || null,
+      description || null,
+      Number(durationMinutes) || 30,
+    ]
   );
 
   return result.insertId;
 };
 
-const updateService = async (serviceId, { name, category, description, durationMinutes }) => {
+const updateService = async (
+  serviceId,
+  { name, specialtyId, category, description, durationMinutes }
+) => {
   await db.execute(
     `
     UPDATE services
-    SET name = ?, category = ?, description = ?, duration_minutes = ?
+    SET
+      name = ?,
+      specialty_id = ?,
+      category = ?,
+      description = ?,
+      duration_minutes = ?
     WHERE id = ?
     `,
-    [name, category, description || null, Number(durationMinutes) || 30, serviceId]
+    [
+      name,
+      specialtyId || null,
+      category || null,
+      description || null,
+      Number(durationMinutes) || 30,
+      serviceId,
+    ]
   );
 };
 
@@ -60,9 +90,11 @@ const getAllSpecialties = async () => {
       s.id,
       s.name,
       s.description,
-      COUNT(DISTINCT ds.doctor_id) AS doctors_count
+      COUNT(DISTINCT ds.doctor_id) AS doctors_count,
+      COUNT(DISTINCT srv.id) AS services_count
     FROM specialties s
     LEFT JOIN doctor_specialties ds ON ds.specialty_id = s.id
+    LEFT JOIN services srv ON srv.specialty_id = s.id
     GROUP BY s.id
     ORDER BY s.name ASC
     `

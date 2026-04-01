@@ -6,8 +6,10 @@ import "../styles/AdminServices.css";
 
 function AdminServices() {
   const [services, setServices] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
+    specialtyId: "",
     category: "",
     description: "",
     durationMinutes: "",
@@ -15,6 +17,7 @@ function AdminServices() {
   const [editingId, setEditingId] = useState(null);
   const [editingData, setEditingData] = useState({
     name: "",
+    specialtyId: "",
     category: "",
     description: "",
     durationMinutes: "",
@@ -22,17 +25,22 @@ function AdminServices() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadServices = async () => {
+  const loadData = async () => {
     try {
-      const response = await api.get("/admin/services");
-      setServices(response.data);
+      const [servicesRes, specialtiesRes] = await Promise.all([
+        api.get("/admin/services"),
+        api.get("/admin/specialties"),
+      ]);
+
+      setServices(servicesRes.data);
+      setSpecialties(specialtiesRes.data);
     } catch {
       setError("Failed to load services.");
     }
   };
 
   useEffect(() => {
-    loadServices();
+    loadData();
   }, []);
 
   const handleCreate = async (e) => {
@@ -45,11 +53,12 @@ function AdminServices() {
       setSuccess(response.data.message || "Service created.");
       setFormData({
         name: "",
+        specialtyId: "",
         category: "",
         description: "",
         durationMinutes: "",
       });
-      await loadServices();
+      await loadData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create service.");
     }
@@ -63,7 +72,7 @@ function AdminServices() {
       const response = await api.put(`/admin/services/${serviceId}`, editingData);
       setSuccess(response.data.message || "Service updated.");
       setEditingId(null);
-      await loadServices();
+      await loadData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update service.");
     }
@@ -76,7 +85,7 @@ function AdminServices() {
     try {
       const response = await api.delete(`/admin/services/${serviceId}`);
       setSuccess(response.data.message || "Service deleted.");
-      await loadServices();
+      await loadData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete service.");
     }
@@ -91,7 +100,7 @@ function AdminServices() {
             <section className="admin-services-page">
               <div className="soft-card admin-services-header">
                 <h1>Admin Services Catalog</h1>
-                <p>Create, edit and remove global medical services.</p>
+                <p>Create services inside specialties.</p>
               </div>
 
               <form className="soft-card admin-services-form" onSubmit={handleCreate}>
@@ -100,22 +109,38 @@ function AdminServices() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Service name"
                 />
+
+                <select
+                  value={formData.specialtyId}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, specialtyId: e.target.value }))}
+                >
+                  <option value="">Select specialty</option>
+                  {specialties.map((specialty) => (
+                    <option key={specialty.id} value={specialty.id}>
+                      {specialty.name}
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   value={formData.category}
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
                   placeholder="Category"
                 />
+
                 <input
                   type="number"
                   value={formData.durationMinutes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, durationMinutes: e.target.value }))}
                   placeholder="Duration minutes"
                 />
+
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Description"
                 />
+
                 <button type="submit" className="primary-btn">
                   Create Service
                 </button>
@@ -135,6 +160,17 @@ function AdminServices() {
                           value={editingData.name}
                           onChange={(e) => setEditingData((prev) => ({ ...prev, name: e.target.value }))}
                         />
+                        <select
+                          value={editingData.specialtyId}
+                          onChange={(e) => setEditingData((prev) => ({ ...prev, specialtyId: e.target.value }))}
+                        >
+                          <option value="">Select specialty</option>
+                          {specialties.map((specialty) => (
+                            <option key={specialty.id} value={specialty.id}>
+                              {specialty.name}
+                            </option>
+                          ))}
+                        </select>
                         <input
                           value={editingData.category}
                           onChange={(e) => setEditingData((prev) => ({ ...prev, category: e.target.value }))}
@@ -155,7 +191,7 @@ function AdminServices() {
                     ) : (
                       <>
                         <h3>{service.name}</h3>
-                        <p>{service.category}</p>
+                        <p>{service.specialty_name || "No specialty linked"}</p>
                         <span>{service.duration_minutes || 0} min</span>
                         <span>{service.clinics_count || 0} clinics</span>
                         <p>{service.description || "No description available."}</p>
@@ -167,6 +203,7 @@ function AdminServices() {
                               setEditingId(service.id);
                               setEditingData({
                                 name: service.name || "",
+                                specialtyId: service.specialty_id || "",
                                 category: service.category || "",
                                 description: service.description || "",
                                 durationMinutes: service.duration_minutes || "",

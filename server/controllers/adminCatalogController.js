@@ -8,6 +8,7 @@ const {
   updateSpecialty,
   deleteSpecialty,
 } = require("../models/adminCatalogModel");
+const { isNonEmptyString, isPositiveInt } = require("../utils/validators");
 
 const getAdminServices = async (req, res) => {
   try {
@@ -23,16 +24,23 @@ const getAdminServices = async (req, res) => {
 
 const createAdminService = async (req, res) => {
   try {
-    const { name, category, description, durationMinutes } = req.body;
+    const { name, specialtyId, category, description, durationMinutes } = req.body;
 
-    if (!name || !category) {
+    if (!isNonEmptyString(name, 2)) {
       return res.status(400).json({
-        message: "Service name and category are required.",
+        message: "Service name is required.",
+      });
+    }
+
+    if (!isPositiveInt(specialtyId)) {
+      return res.status(400).json({
+        message: "A valid specialty is required.",
       });
     }
 
     const serviceId = await createService({
       name,
+      specialtyId: Number(specialtyId),
       category,
       description,
       durationMinutes,
@@ -98,7 +106,7 @@ const createAdminSpecialty = async (req, res) => {
   try {
     const { name, description } = req.body;
 
-    if (!name) {
+    if (!isNonEmptyString(name, 2)) {
       return res.status(400).json({
         message: "Specialty name is required.",
       });
