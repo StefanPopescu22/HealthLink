@@ -112,10 +112,8 @@ const removeClinicService = async (req, res) => {
   }
 };
 
-// --- FUNCȚIA NOUĂ PENTRU CREAREA UNUI SERVICIU ÎN CATALOG ---
 const createCatalogService = async (req, res) => {
   try {
-    // Extragem datele din request (adaptează numele variabilelor dacă în frontend le-ai numit altfel)
     const { name, specialtyId, description } = req.body;
 
     if (!name || !specialtyId) {
@@ -124,8 +122,6 @@ const createCatalogService = async (req, res) => {
       });
     }
 
-    // Apelăm modelul pentru a salva serviciul în baza de date
-    // (vezi nota de mai jos despre models/clinicServicesModel.js)
     const result = await addCatalogService({
       name,
       specialtyId: Number(specialtyId),
@@ -149,5 +145,5 @@ module.exports = {
   createClinicService,
   editClinicService,
   removeClinicService,
-  createCatalogService, // <-- Funcția exportată corect
+  createCatalogService, 
 };

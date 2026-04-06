@@ -17,7 +17,6 @@ import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/Clinics.css";
 
-/* ================================================================ */
 function Clinics() {
   const { user } = useContext(AuthContext);
 
@@ -32,7 +31,6 @@ function Clinics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* ── Load data ──────────────────────────────────────────────── */
   const loadClinics = async (currentFilters = filters) => {
     setLoading(true);
     setError("");
@@ -61,7 +59,6 @@ function Clinics() {
   useEffect(() => { loadClinics(); }, []);
   useEffect(() => { loadFavorites(); }, [user]);
 
-  /* ── Handlers ───────────────────────────────────────────────── */
   const handleFilterChange = (e) =>
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -90,17 +87,15 @@ function Clinics() {
     }
   };
 
-  /* ── Derived ────────────────────────────────────────────────── */
   const hasActiveFilters = Object.values(filters).some(Boolean);
   const totalDoctors = clinics.reduce((s, c) => s + (c.doctors_count || 0), 0);
 
-  /* ── Render ─────────────────────────────────────────────────── */
+  
   return (
     <>
       <main className="clinics-page">
         <div className="page-container">
 
-          {/* ── Hero ──────────────────────────────────────── */}
           <section className="clinics-hero">
             {/* Left */}
             <div className="clinics-hero-content">
@@ -120,7 +115,6 @@ function Clinics() {
               </p>
             </div>
 
-            {/* Right — stats */}
             <div className="clinics-hero-stats">
               <div className="clinics-stats-header">
                 <span>Platform Overview</span>
@@ -162,8 +156,6 @@ function Clinics() {
               </div>
             </div>
           </section>
-
-          {/* ── Search form ────────────────────────────────── */}
           <form className="clinics-search-form" onSubmit={handleSearch}>
             <div className="search-field-wrap">
               <span className="search-field-label">Clinic name</span>
@@ -226,15 +218,12 @@ function Clinics() {
               )}
             </div>
           </form>
-
-          {/* ── Error ──────────────────────────────────────── */}
           {error && (
             <p className="clinics-error-msg">
               <FaXmark /> {error}
             </p>
           )}
 
-          {/* ── Results toolbar ────────────────────────────── */}
           {!loading && !error && (
             <div className="clinics-results-toolbar">
               <p className="clinics-results-count">
@@ -258,8 +247,6 @@ function Clinics() {
               ))}
             </div>
           )}
-
-          {/* ── Clinics grid ───────────────────────────────── */}
           {!loading && !error && (
             <section className="clinics-grid">
               {clinics.length === 0 ? (
@@ -293,8 +280,6 @@ function Clinics() {
     </>
   );
 }
-
-/* ── ClinicCard sub-component ──────────────────────────────────── */
 function ClinicCard({ clinic, isFavorite, showFavorite, onToggleFavorite }) {
   return (
     <article className="clinic-card">
@@ -307,13 +292,11 @@ function ClinicCard({ clinic, isFavorite, showFavorite, onToggleFavorite }) {
           </div>
 
           <div className="clinic-card-top-right">
-            {/* Rating */}
             <div className="clinic-rating">
               <FaStar />
               <span>{parseFloat(clinic.rating || 0).toFixed(1)}</span>
             </div>
 
-            {/* Favorite */}
             {showFavorite && (
               <button
                 type="button"
@@ -327,10 +310,8 @@ function ClinicCard({ clinic, isFavorite, showFavorite, onToggleFavorite }) {
           </div>
         </div>
 
-        {/* Name */}
         <h2>{clinic.name}</h2>
 
-        {/* Type */}
         {clinic.clinic_type && (
           <p className="clinic-specialty">
             <FaStethoscope />

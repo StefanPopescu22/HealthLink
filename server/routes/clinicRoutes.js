@@ -35,29 +35,24 @@ router.get("/specialties", getClinicSpecialties);
 router.post("/specialties", createClinicSpecialty);
 router.post("/services/catalog", createClinicServiceCatalogEntry); 
 
-// Profil și Dashboard
 router.get("/me", getMyClinic);
 router.get("/dashboard", getClinicDashboard);
 
-// Fișiere Pacienți
+
 router.get("/patients/:patientUserId/files", getClinicPatientFilesController);
 
-// Programări
 router.get("/appointments", getMyClinicAppointments);
 router.patch("/appointments/:appointmentId/status", changeClinicAppointmentStatus);
 
-// Management Doctori
 router.get("/doctors", getClinicDoctors);
 router.post("/doctors", createDoctorForOwnClinic);
 router.put("/doctors/:doctorId", editClinicDoctor);
 
-// Management Servicii (Legarea de clinica)
 router.get("/services", getMyClinicServices);
 router.post("/services", createClinicService);
 router.put("/services/:clinicServiceId", editClinicService);
 router.delete("/services/:clinicServiceId", removeClinicService);
 
-// Orare Doctori
 router.get("/doctor-schedules/doctors", getClinicDoctorsForSchedule);
 router.get("/doctor-schedules/:doctorId", getClinicDoctorSchedule);
 router.post("/doctor-schedules/:doctorId", createClinicDoctorSchedule);

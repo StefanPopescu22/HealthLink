@@ -2,9 +2,6 @@ const db = require("../config/db");
 const { getDoctorDocumentsByPatient } = require("./documentModel");
 const { getDoctorAnalysesByPatient } = require("./analysisModel");
 
-/**
- * Recuperează datele de profil ale doctorului pe baza user_id-ului din tabelul users
- */
 const getDoctorByUserId = async (userId) => {
   const [rows] = await db.execute(
     `
@@ -17,9 +14,6 @@ const getDoctorByUserId = async (userId) => {
   return rows[0];
 };
 
-/**
- * Recuperează lista de pacienți unici care au avut cel puțin o programare la acest doctor
- */
 const getDoctorPatients = async (doctorUserId) => {
   try {
     const doctor = await getDoctorByUserId(doctorUserId);
@@ -54,16 +48,11 @@ const getDoctorPatients = async (doctorUserId) => {
   }
 };
 
-/**
- * Recuperează toate detaliile unui pacient (profil, alergii, programări, note, documente, analize)
- * Verifică de asemenea dacă doctorul are dreptul să vadă acest pacient
- */
 const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
   try {
     const doctor = await getDoctorByUserId(doctorUserId);
     if (!doctor) return null;
 
-    // 1. Informații de bază pacient și profil medical
     const [patientRows] = await db.execute(
       `
       SELECT
@@ -80,7 +69,6 @@ const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
     const patient = patientRows[0];
     if (!patient) return null;
 
-    // 2. Verificare acces: doctorul poate vedea pacientul doar dacă au/au avut programări împreună
     const [ownershipRows] = await db.execute(
       `SELECT COUNT(*) AS total FROM appointments WHERE doctor_id = ? AND patient_user_id = ?`,
       [doctor.id, patientUserId]
@@ -90,13 +78,11 @@ const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
       return { forbidden: true };
     }
 
-    // 3. Alergii pacient
     const [allergyRows] = await db.execute(
       `SELECT id, allergy_name FROM patient_allergies WHERE user_id = ? ORDER BY allergy_name ASC`,
       [patientUserId]
     );
 
-    // 4. Istoric programări cu acest doctor
     const [appointmentRows] = await db.execute(
       `SELECT id, appointment_date, appointment_time, status, notes 
        FROM appointments 
@@ -105,7 +91,6 @@ const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
       [doctor.id, patientUserId]
     );
 
-    // 5. Note medicale lăsate de doctori pentru acest pacient
     const [noteRows] = await db.execute(
       `SELECT id, note_text, recommendation_text, created_at, appointment_id
        FROM doctor_notes 
@@ -114,13 +99,10 @@ const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
       [doctor.id, patientUserId]
     );
 
-    // 6. Documente și Analize - Aici folosim un sub-bloc try-catch 
-    // pentru a preveni crash-ul total dacă funcțiile din celelalte modele au erori
     let documents = [];
     let analyses = [];
 
     try {
-      // Notă: Verifică în documentModel.js dacă aceste funcții primesc DOAR patientUserId
       documents = await getDoctorDocumentsByPatient(patientUserId);
       analyses = await getDoctorAnalysesByPatient(patientUserId);
     } catch (err) {
@@ -142,9 +124,6 @@ const getDoctorPatientDetails = async (doctorUserId, patientUserId) => {
   }
 };
 
-/**
- * Creează o notă medicală nouă pentru un pacient
- */
 const createDoctorNote = async ({
   doctorUserId,
   patientUserId,
@@ -156,7 +135,6 @@ const createDoctorNote = async ({
     const doctor = await getDoctorByUserId(doctorUserId);
     if (!doctor) return { doctorNotFound: true };
 
-    // Verificăm din nou permisiunea înainte de inserare
     const [ownershipRows] = await db.execute(
       `SELECT COUNT(*) AS total FROM appointments WHERE doctor_id = ? AND patient_user_id = ?`,
       [doctor.id, patientUserId]

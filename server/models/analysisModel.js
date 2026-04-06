@@ -69,7 +69,6 @@ const getAnalysesByPatient = async (patientUserId) => {
   return rows;
 };
 
-// --- ACEASTA ESTE FUNCȚIA PE CARE O CĂUTA DOCTORUL ---
 const getDoctorAnalysesByPatient = async (patientUserId) => {
   return await getAnalysesByPatient(patientUserId);
 };
@@ -142,7 +141,7 @@ const deleteMedicalAnalysis = async (analysisId) => {
 module.exports = {
   createMedicalAnalysis,
   getAnalysesByPatient,
-  getDoctorAnalysesByPatient, // EXPORTAT ACUM
+  getDoctorAnalysesByPatient, 
   getAnalysisById,
   updateMedicalAnalysis,
   deleteMedicalAnalysis,

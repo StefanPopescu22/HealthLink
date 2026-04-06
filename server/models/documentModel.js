@@ -63,7 +63,6 @@ const getDocumentsByPatient = async (patientUserId) => {
   return rows;
 };
 
-// --- ACEASTA ESTE FUNCȚIA PE CARE O CĂUTA DOCTORUL ---
 const getDoctorDocumentsByPatient = async (patientUserId) => {
   return await getDocumentsByPatient(patientUserId);
 };
@@ -130,7 +129,7 @@ const deleteMedicalDocument = async (documentId) => {
 module.exports = {
   createMedicalDocument,
   getDocumentsByPatient,
-  getDoctorDocumentsByPatient, // EXPORTAT ACUM
+  getDoctorDocumentsByPatient,
   getDocumentById,
   updateMedicalDocument,
   deleteMedicalDocument,

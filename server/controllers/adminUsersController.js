@@ -69,7 +69,6 @@ const deleteUser = async (req, res) => {
   try {
     const userId = Number(req.params.userId);
     
-    // 1. Verificăm mai întâi dacă userul există
     const user = await getUserById(userId);
     if (!user) {
       return res.status(404).json({

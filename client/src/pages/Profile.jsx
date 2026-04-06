@@ -8,11 +8,54 @@ import {
   FaHospital,
   FaStethoscope,
   FaClipboardList,
+  FaCheck,
+  FaXmark,
+  FaHeartPulse,
+  FaLocationDot,
+  FaCalendar,
+  FaDroplet,
+  FaTriangleExclamation,
+  FaUserShield,
 } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/Profile.css";
+
+const ROLE_ICONS = {
+  patient: <FaHeartPulse />,
+  doctor:  <FaStethoscope />,
+  clinic:  <FaHospital />,
+  admin:   <FaUserShield />,
+};
+
+function ProfileInfoItem({ label, value, editMode, name, type = "text", onChange, placeholder }) {
+  return (
+    <div className="profile-info-item">
+      <strong>{label}</strong>
+      {editMode ? (
+        type === "textarea" ? (
+          <textarea
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder || label}
+          />
+        ) : (
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder || label}
+          />
+        )
+      ) : (
+        <span>{value || "Not set"}</span>
+      )}
+    </div>
+  );
+}
 
 function Profile() {
   const [profile, setProfile] = useState(null);
@@ -39,83 +82,80 @@ function Profile() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await api.get("/profile/me");
-        const data = response.data;
+        const res = await api.get("/profile/me");
+        const data = res.data;
         setProfile(data);
-
-        const details = data.details || {};
-
+        const d = data.details || {};
         setFormData({
           phone: data.phone || "",
-          dateOfBirth: details.date_of_birth || "",
-          gender: details.gender || "",
-          bloodGroup: details.blood_group || "",
-          emergencyContactName: details.emergency_contact_name || "",
-          emergencyContactPhone: details.emergency_contact_phone || "",
-          medicalNotes: details.medical_notes || "",
+          dateOfBirth: d.date_of_birth || "",
+          gender: d.gender || "",
+          bloodGroup: d.blood_group || "",
+          emergencyContactName: d.emergency_contact_name || "",
+          emergencyContactPhone: d.emergency_contact_phone || "",
+          medicalNotes: d.medical_notes || "",
           allergiesText: (data.allergies || []).map((a) => a.allergy_name).join(", "),
-          description: details.description || "",
-          experienceYears: details.experience_years || "",
-          scheduleInfo: details.schedule_info || "",
-          city: details.city || "",
-          address: details.address || "",
+          description: d.description || "",
+          experienceYears: d.experience_years || "",
+          scheduleInfo: d.schedule_info || "",
+          city: d.city || "",
+          address: d.address || "",
         });
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load profile.");
       }
     };
-
     loadProfile();
   }, []);
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSave = async () => {
-    setMessage("");
-    setError("");
-
+    setMessage(""); setError("");
     try {
-      const payload = {
-        phone: formData.phone,
-      };
+      const payload = { phone: formData.phone };
 
       if (profile.role === "patient") {
-        payload.dateOfBirth = formData.dateOfBirth;
-        payload.gender = formData.gender;
-        payload.bloodGroup = formData.bloodGroup;
-        payload.emergencyContactName = formData.emergencyContactName;
-        payload.emergencyContactPhone = formData.emergencyContactPhone;
-        payload.medicalNotes = formData.medicalNotes;
-        payload.allergies = formData.allergiesText
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean);
+        Object.assign(payload, {
+          dateOfBirth:          formData.dateOfBirth,
+          gender:               formData.gender,
+          bloodGroup:           formData.bloodGroup,
+          emergencyContactName: formData.emergencyContactName,
+          emergencyContactPhone:formData.emergencyContactPhone,
+          medicalNotes:         formData.medicalNotes,
+          allergies:            formData.allergiesText.split(",").map((i) => i.trim()).filter(Boolean),
+        });
       }
 
       if (profile.role === "doctor") {
-        payload.description = formData.description;
-        payload.experienceYears = formData.experienceYears;
-        payload.scheduleInfo = formData.scheduleInfo;
+        Object.assign(payload, {
+          description:    formData.description,
+          experienceYears:formData.experienceYears,
+          scheduleInfo:   formData.scheduleInfo,
+        });
       }
 
       if (profile.role === "clinic") {
-        payload.city = formData.city;
-        payload.address = formData.address;
-        payload.description = formData.description;
+        Object.assign(payload, {
+          city:        formData.city,
+          address:     formData.address,
+          description: formData.description,
+        });
       }
 
-      const response = await api.put("/profile/me", payload);
-      setProfile(response.data.profile);
+      const res = await api.put("/profile/me", payload);
+      setProfile(res.data.profile);
       setMessage("Profile updated successfully.");
       setEditing(false);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile.");
     }
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    setMessage(""); setError("");
   };
 
   if (!profile) {
@@ -125,7 +165,14 @@ function Profile() {
           <div className="page-container dashboard-shell-grid">
             <DashboardSidebar />
             <div className="dashboard-page-content">
-              <p>{error || "Loading profile..."}</p>
+              {error ? (
+                <p className="profile-message error"><FaXmark /> {error}</p>
+              ) : (
+                <div className="profile-loading">
+                  <div className="profile-skeleton" style={{ height: 130 }} />
+                  <div className="profile-skeleton" style={{ height: 280, opacity: 0.6 }} />
+                </div>
+              )}
             </div>
           </div>
         </main>
@@ -142,362 +189,179 @@ function Profile() {
 
           <div className="dashboard-page-content">
             <section className="profile-page">
-              <section className="profile-hero soft-card">
+
+              <section className="profile-hero">
                 <div className="profile-hero-main">
                   <div className="profile-badge">
                     <FaShieldHeart />
                     <span>Secure personal workspace</span>
                   </div>
-
                   <div className="profile-title-row">
                     <div className="profile-avatar">
-                      <FaUser />
+                      {ROLE_ICONS[profile.role] || <FaUser />}
                     </div>
-
                     <div>
-                      <h1>My Profile</h1>
-                      <p>Manage your account details based on your role.</p>
+                      <h1>
+                        {profile.first_name} {profile.last_name}
+                      </h1>
+                      <p>Manage your account details and personal information.</p>
                     </div>
                   </div>
                 </div>
 
-                <button
-                  className="primary-btn"
-                  onClick={() => (editing ? handleSave() : setEditing(true))}
-                >
-                  <FaPenToSquare />
-                  {editing ? "Save Profile" : "Edit Profile"}
-                </button>
+                <div className="profile-hero-actions">
+                  {editing ? (
+                    <>
+                      <button className="profile-edit-btn save" onClick={handleSave}>
+                        <FaCheck /> Save Changes
+                      </button>
+                      <button className="profile-cancel-btn" onClick={handleCancel}>
+                        <FaXmark /> Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button className="profile-edit-btn" onClick={() => setEditing(true)}>
+                      <FaPenToSquare /> Edit Profile
+                    </button>
+                  )}
+                </div>
               </section>
 
-              {message && <p style={{ color: "green", marginBottom: "12px" }}>{message}</p>}
-              {error && <p style={{ color: "red", marginBottom: "12px" }}>{error}</p>}
+              {message && <p className="profile-message success"><FaCheck /> {message}</p>}
+              {error   && <p className="profile-message error"><FaXmark /> {error}</p>}
 
               <section className="profile-content">
-                <article className="soft-card profile-section-card">
+                <article className="profile-section-card">
                   <div className="profile-section-header">
-                    <h2>Account Information</h2>
-                    <p>Basic account and contact details.</p>
+                    <div className="profile-section-icon"><FaUser /></div>
+                    <div>
+                      <h2>Account Information</h2>
+                      <p>Basic account and contact details.</p>
+                    </div>
                   </div>
-
                   <div className="profile-info-grid">
                     <div className="profile-info-item">
-                      <strong>First Name</strong>
-                      <span>{profile.first_name}</span>
+                      <strong>Full Name</strong>
+                      <span>{profile.first_name} {profile.last_name}</span>
                     </div>
-
-                    <div className="profile-info-item">
-                      <strong>Last Name</strong>
-                      <span>{profile.last_name}</span>
-                    </div>
-
                     <div className="profile-info-item">
                       <strong>Email</strong>
                       <span>{profile.email}</span>
                     </div>
-
                     <div className="profile-info-item">
                       <strong>Role</strong>
-                      <span>{profile.role}</span>
+                      <span className="role-badge">{profile.role}</span>
                     </div>
-
-                    <div className="profile-info-item">
-                      <strong>Phone</strong>
-                      {editing ? (
-                        <input
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          placeholder="Phone number"
-                        />
-                      ) : (
-                        <span>{formData.phone || "Not set"}</span>
-                      )}
-                    </div>
+                    <ProfileInfoItem
+                      label="Phone"
+                      name="phone"
+                      value={formData.phone}
+                      editMode={editing}
+                      onChange={handleChange}
+                      placeholder="e.g. +40 721 000 000"
+                    />
                   </div>
                 </article>
 
                 {profile.role === "patient" && (
-                  <article className="soft-card profile-section-card">
+                  <article className="profile-section-card">
                     <div className="profile-section-header">
-                      <h2>Medical Information</h2>
-                      <p>Health-related data for the patient profile.</p>
+                      <div className="profile-section-icon"><FaHeartPulse /></div>
+                      <div>
+                        <h2>Medical Information</h2>
+                        <p>Health-related data for your patient profile.</p>
+                      </div>
                     </div>
-
                     <div className="profile-info-grid">
-                      <div className="profile-info-item">
-                        <strong>Date of Birth</strong>
-                        {editing ? (
-                          <input
-                            type="date"
-                            name="dateOfBirth"
-                            value={formData.dateOfBirth}
-                            onChange={handleChange}
-                          />
-                        ) : (
-                          <span>{formData.dateOfBirth || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Gender</strong>
-                        {editing ? (
-                          <input
-                            name="gender"
-                            value={formData.gender}
-                            onChange={handleChange}
-                            placeholder="Gender"
-                          />
-                        ) : (
-                          <span>{formData.gender || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Blood Group</strong>
-                        {editing ? (
-                          <input
-                            name="bloodGroup"
-                            value={formData.bloodGroup}
-                            onChange={handleChange}
-                            placeholder="Blood group"
-                          />
-                        ) : (
-                          <span>{formData.bloodGroup || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Emergency Contact Name</strong>
-                        {editing ? (
-                          <input
-                            name="emergencyContactName"
-                            value={formData.emergencyContactName}
-                            onChange={handleChange}
-                            placeholder="Emergency contact name"
-                          />
-                        ) : (
-                          <span>{formData.emergencyContactName || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Emergency Contact Phone</strong>
-                        {editing ? (
-                          <input
-                            name="emergencyContactPhone"
-                            value={formData.emergencyContactPhone}
-                            onChange={handleChange}
-                            placeholder="Emergency contact phone"
-                          />
-                        ) : (
-                          <span>{formData.emergencyContactPhone || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Allergies</strong>
-                        {editing ? (
-                          <input
-                            name="allergiesText"
-                            value={formData.allergiesText}
-                            onChange={handleChange}
-                            placeholder="Example: Penicillin, Dust"
-                          />
-                        ) : (
-                          <span>{formData.allergiesText || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Medical Notes</strong>
-                        {editing ? (
-                          <textarea
-                            name="medicalNotes"
-                            value={formData.medicalNotes}
-                            onChange={handleChange}
-                            placeholder="Medical notes"
-                          />
-                        ) : (
-                          <span>{formData.medicalNotes || "Not set"}</span>
-                        )}
-                      </div>
+                      <ProfileInfoItem label="Date of Birth"       name="dateOfBirth"          value={formData.dateOfBirth}           editMode={editing} onChange={handleChange} type="date" />
+                      <ProfileInfoItem label="Gender"              name="gender"               value={formData.gender}                editMode={editing} onChange={handleChange} placeholder="e.g. Male, Female" />
+                      <ProfileInfoItem label="Blood Group"         name="bloodGroup"           value={formData.bloodGroup}            editMode={editing} onChange={handleChange} placeholder="e.g. A+, O-" />
+                      <ProfileInfoItem label="Emergency Contact"   name="emergencyContactName" value={formData.emergencyContactName}  editMode={editing} onChange={handleChange} />
+                      <ProfileInfoItem label="Emergency Phone"     name="emergencyContactPhone"value={formData.emergencyContactPhone} editMode={editing} onChange={handleChange} />
+                      <ProfileInfoItem label="Allergies"           name="allergiesText"        value={formData.allergiesText}         editMode={editing} onChange={handleChange} placeholder="e.g. Penicillin, Dust" />
+                      <ProfileInfoItem label="Medical Notes"       name="medicalNotes"         value={formData.medicalNotes}          editMode={editing} onChange={handleChange} type="textarea" />
                     </div>
                   </article>
                 )}
 
                 {profile.role === "doctor" && (
-                  <article className="soft-card profile-section-card">
+                  <article className="profile-section-card">
                     <div className="profile-section-header">
-                      <h2>Professional Information</h2>
-                      <p>Doctor-specific profile information.</p>
+                      <div className="profile-section-icon"><FaStethoscope /></div>
+                      <div>
+                        <h2>Professional Information</h2>
+                        <p>Doctor-specific profile details.</p>
+                      </div>
                     </div>
-
                     <div className="profile-info-grid">
-                      <div className="profile-info-item">
-                        <strong>Clinic</strong>
-                        <span>{profile.details?.clinic_name || "Not set"}</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Clinic City</strong>
-                        <span>{profile.details?.clinic_city || "Not set"}</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Specialties</strong>
-                        <span>{profile.details?.specialties || "Not set"}</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Experience Years</strong>
-                        {editing ? (
-                          <input
-                            name="experienceYears"
-                            type="number"
-                            min="0"
-                            value={formData.experienceYears}
-                            onChange={handleChange}
-                            placeholder="Years of experience"
-                          />
-                        ) : (
-                          <span>{formData.experienceYears || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Description</strong>
-                        {editing ? (
-                          <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Professional description"
-                          />
-                        ) : (
-                          <span>{formData.description || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Schedule</strong>
-                        {editing ? (
-                          <textarea
-                            name="scheduleInfo"
-                            value={formData.scheduleInfo}
-                            onChange={handleChange}
-                            placeholder="Schedule information"
-                          />
-                        ) : (
-                          <span>{formData.scheduleInfo || "Not set"}</span>
-                        )}
-                      </div>
+                      <div className="profile-info-item"><strong>Clinic</strong><span>{profile.details?.clinic_name || "Not set"}</span></div>
+                      <div className="profile-info-item"><strong>Clinic City</strong><span>{profile.details?.clinic_city || "Not set"}</span></div>
+                      <div className="profile-info-item"><strong>Specialties</strong><span>{profile.details?.specialties || "Not set"}</span></div>
+                      <ProfileInfoItem label="Experience (years)" name="experienceYears" value={formData.experienceYears} editMode={editing} onChange={handleChange} type="number" placeholder="e.g. 8" />
+                      <ProfileInfoItem label="Description"        name="description"     value={formData.description}     editMode={editing} onChange={handleChange} type="textarea" />
+                      <ProfileInfoItem label="Schedule Info"      name="scheduleInfo"    value={formData.scheduleInfo}    editMode={editing} onChange={handleChange} type="textarea" placeholder="e.g. Mon–Fri, 09:00–17:00" />
                     </div>
                   </article>
                 )}
 
                 {profile.role === "clinic" && (
-                  <article className="soft-card profile-section-card">
+                  <article className="profile-section-card">
                     <div className="profile-section-header">
-                      <h2>Clinic Information</h2>
-                      <p>Clinic-specific profile information.</p>
+                      <div className="profile-section-icon"><FaHospital /></div>
+                      <div>
+                        <h2>Clinic Information</h2>
+                        <p>Clinic-specific profile details.</p>
+                      </div>
                     </div>
-
                     <div className="profile-info-grid">
-                      <div className="profile-info-item">
-                        <strong>Clinic Name</strong>
-                        <span>{profile.details?.name || "Not set"}</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Clinic Type</strong>
-                        <span>{profile.details?.clinic_type || "Not set"}</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>City</strong>
-                        {editing ? (
-                          <input
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            placeholder="City"
-                          />
-                        ) : (
-                          <span>{formData.city || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Address</strong>
-                        {editing ? (
-                          <input
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            placeholder="Address"
-                          />
-                        ) : (
-                          <span>{formData.address || "Not set"}</span>
-                        )}
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Description</strong>
-                        {editing ? (
-                          <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Clinic description"
-                          />
-                        ) : (
-                          <span>{formData.description || "Not set"}</span>
-                        )}
-                      </div>
+                      <div className="profile-info-item"><strong>Clinic Name</strong><span>{profile.details?.name || "Not set"}</span></div>
+                      <div className="profile-info-item"><strong>Clinic Type</strong><span>{profile.details?.clinic_type || "Not set"}</span></div>
+                      <ProfileInfoItem label="City"        name="city"        value={formData.city}        editMode={editing} onChange={handleChange} placeholder="e.g. Bucharest" />
+                      <ProfileInfoItem label="Address"     name="address"     value={formData.address}     editMode={editing} onChange={handleChange} />
+                      <ProfileInfoItem label="Description" name="description" value={formData.description} editMode={editing} onChange={handleChange} type="textarea" />
                     </div>
                   </article>
                 )}
 
                 {profile.role === "admin" && (
-                  <article className="soft-card profile-section-card">
+                  <article className="profile-section-card">
                     <div className="profile-section-header">
-                      <h2>Administrator Information</h2>
-                      <p>System-level account information.</p>
+                      <div className="profile-section-icon"><FaUserShield /></div>
+                      <div>
+                        <h2>Administrator Information</h2>
+                        <p>System-level account details.</p>
+                      </div>
                     </div>
-
                     <div className="profile-info-grid">
-                      <div className="profile-info-item">
-                        <strong>Access Level</strong>
-                        <span>Full administrative control</span>
-                      </div>
-
-                      <div className="profile-info-item">
-                        <strong>Created At</strong>
-                        <span>{profile.created_at}</span>
-                      </div>
+                      <div className="profile-info-item"><strong>Access Level</strong><span>Full administrative control</span></div>
+                      <div className="profile-info-item"><strong>Account Created</strong><span>{profile.created_at || "—"}</span></div>
                     </div>
                   </article>
                 )}
               </section>
 
               <section className="profile-contact-cards">
-                <article className="soft-card profile-contact-card">
-                  <div className="profile-contact-icon">
-                    <FaEnvelope />
-                  </div>
+                <article className="profile-contact-card">
+                  <div className="profile-contact-icon"><FaEnvelope /></div>
                   <h3>Email Access</h3>
-                  <p>Keep your email updated for notifications and secure access.</p>
+                  <p>Your email is used for secure login and system notifications.</p>
                 </article>
 
-                <article className="soft-card profile-contact-card">
+                <article className="profile-contact-card">
                   <div className="profile-contact-icon">
-                    {profile.role === "clinic" ? <FaHospital /> : profile.role === "doctor" ? <FaStethoscope /> : <FaPhone />}
+                    {ROLE_ICONS[profile.role] || <FaClipboardList />}
                   </div>
-                  <h3>Role-Based Information</h3>
+                  <h3>Role-Based Profile</h3>
                   <p>Your profile adapts automatically to the permissions and data of your account role.</p>
                 </article>
+
+                <article className="profile-contact-card">
+                  <div className="profile-contact-icon"><FaShieldHeart /></div>
+                  <h3>Data Security</h3>
+                  <p>All personal and medical information is stored securely and accessible only to you.</p>
+                </article>
               </section>
+
             </section>
           </div>
         </div>

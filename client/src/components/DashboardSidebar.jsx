@@ -52,7 +52,6 @@ const patientLinks = [
   { to: "/medical-documents", label: "Documents",   icon: <FaFileMedical /> },
   { to: "/medical-analyses",  label: "Analyses",    icon: <FaNotesMedical /> },
   { to: "/favorites",         label: "Favorites",   icon: <FaHospital /> },
-  { to: "/clinics",           label: "Clinics",     icon: <FaHospital /> },
   { to: "/chatbot",           label: "AI Assistant",icon: <FaRobot /> },
   { to: "/profile",           label: "Profile",     icon: <FaUser /> },
 ];
@@ -80,7 +79,7 @@ const adminLinks = [
   { to: "/admin/manage-doctors",  label: "Manage Doctors",   icon: <FaUserDoctor /> },
   { to: "/admin/users",           label: "Manage Users",     icon: <FaUserShield /> },
   { to: "/admin/services",        label: "Services Catalog", icon: <FaNotesMedical /> },
-  { to: "/admin/specialties",     label: "Specialties",      icon: <FaStethoscope /> },
+  { to: "/admin/specialties",     label: "Manage Specialties",      icon: <FaStethoscope /> },
   { to: "/clinics",               label: "Clinics",          icon: <FaHospital /> },
   { to: "/doctors",               label: "Doctors",          icon: <FaUserShield /> },
 ];
