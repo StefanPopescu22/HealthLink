@@ -36,6 +36,8 @@ import AdminServices from "../pages/AdminServices";
 import AdminSpecialties from "../pages/AdminSpecialties";
 import AdminManageDoctors from "../pages/AdminManageDoctors";
 import ClinicPatientFiles from "../pages/ClinicPatientFiles";
+import AboutUs from "../pages/AboutUs";
+import FAQ from "../pages/FAQ";
 
 function AppRouter() {
   return (
@@ -59,7 +61,9 @@ function AppRouter() {
         <Route path="/services" element={<Services />} />
         <Route path="/specialties" element={<Specialties />} />
         <Route path="/chatbot" element={<Chatbot />} />
-
+        
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/faq"   element={<FAQ />} />
 
         <Route
           path="/clinic/patients/:patientUserId/files"

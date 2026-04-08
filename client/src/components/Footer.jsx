@@ -32,9 +32,11 @@ function Footer() {
           <div className="footer-column">
             <h4>Services</h4>
             <Link to="/clinics">Clinics</Link>
-            <Link to="/doctor-profile">Doctors</Link>
             <Link to="/dashboard-patient">Patient Area</Link>
             <Link to="/dashboard-clinic">Clinic Area</Link>
+            <Link to="/about">About Us</Link>
+            <Link to="/faq">FAQ</Link>
+
           </div>
 
           <div className="footer-column">

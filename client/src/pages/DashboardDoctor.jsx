@@ -10,37 +10,61 @@ import {
   FaStethoscope,
   FaUserDoctor,
   FaUserGroup,
+  FaCalendarDays,
+  FaClock,
+  FaPhone,
 } from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
 import "../styles/DashboardDoctor.css";
 
+const formatDate = (d) => {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  } catch { return d; }
+};
+
+const formatTime = (t) => (t ? t.slice(0, 5) : "—");
+
 function DashboardDoctor() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const response = await api.get("/doctor/dashboard");
-        setData(response.data);
-      } catch (err) {
+        const res = await api.get("/doctor/dashboard");
+        setData(res.data);
+      } catch {
         setError("Failed to load doctor dashboard.");
+      } finally {
+        setLoading(false);
       }
     };
-
     loadDashboard();
   }, []);
 
-  if (!data) {
+  if (loading || !data) {
     return (
       <>
         <main className="dashboard-screen">
           <div className="page-container dashboard-shell-grid">
             <DashboardSidebar />
             <div className="dashboard-page-content">
-              <p>{error || "Loading doctor dashboard..."}</p>
+              {error ? (
+                <p style={{ color: "#b91c1c", padding: "14px 20px", background: "#fef2f2", borderRadius: 12, border: "1px solid #fecaca" }}>
+                  {error}
+                </p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                  {[140, 80, 200].map((h, i) => (
+                    <div key={i} style={{ height: h, borderRadius: 24, opacity: 1 - i * 0.25, background: "linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </main>
@@ -52,51 +76,16 @@ function DashboardDoctor() {
   const { doctor, stats, todaySchedule, recentPatients } = data;
 
   const statsCards = [
-    {
-      icon: <FaCalendarCheck />,
-      value: String(stats.todayAppointments),
-      label: "Today’s Appointments",
-      trend: "Live schedule",
-    },
-    {
-      icon: <FaUserGroup />,
-      value: String(stats.activePatients),
-      label: "Active Patients",
-      trend: "Real patient count",
-    },
-    {
-      icon: <FaFileMedical />,
-      value: String(stats.upcomingAppointments),
-      label: "Upcoming Visits",
-      trend: "Future appointments",
-    },
-    {
-      icon: <FaStar />,
-      value: String(stats.rating),
-      label: "Clinic Rating",
-      trend: "Patient feedback",
-    },
+    { icon: <FaCalendarCheck />, value: String(stats.todayAppointments),  label: "Today's Appointments", trend: "Live schedule" },
+    { icon: <FaUserGroup />,     value: String(stats.activePatients),      label: "Active Patients",     trend: "Real count" },
+    { icon: <FaFileMedical />,   value: String(stats.upcomingAppointments),label: "Upcoming Visits",     trend: "Future appts" },
+    { icon: <FaStar />,          value: String(stats.rating),              label: "Clinic Rating",       trend: "Patient feedback" },
   ];
 
   const quickActions = [
-    {
-      icon: <FaCalendarCheck />,
-      title: "Review Schedule",
-      text: "Check today’s live appointments and patient flow.",
-      link: "/dashboard-doctor",
-    },
-    {
-      icon: <FaFileMedical />,
-      title: "Open Profile",
-      text: "Update your role-based doctor profile and schedule details.",
-      link: "/profile",
-    },
-    {
-      icon: <FaRobot />,
-      title: "AI Assistant",
-      text: "Review symptom guidance and recommendation tools.",
-      link: "/chatbot",
-    },
+    { icon: <FaCalendarCheck />, title: "Manage Appointments", text: "Review and update your live appointments and patient schedule.", link: "/doctor/appointments" },
+    { icon: <FaUserGroup />,     title: "My Patients",         text: "View all patients linked to your consultations and records.",   link: "/doctor/patients" },
+    { icon: <FaFileMedical />,   title: "Open Profile",        text: "Update your doctor profile, specialties and schedule details.", link: "/profile" },
   ];
 
   return (
@@ -105,206 +94,219 @@ function DashboardDoctor() {
         <div className="page-container dashboard-shell-grid">
           <DashboardSidebar />
 
-          <div className="dashboard-page-content">
-            <section className="doctor-dashboard-page">
-              <section className="doctor-dashboard-hero">
-                <div className="doctor-dashboard-hero-content">
-                  <div className="doctor-dashboard-badge">
-                    <FaShieldHeart />
-                    <span>Professional medical workspace</span>
-                  </div>
+          <div className="dashboard-page-content doctor-dashboard-page">
 
-                  <h1 className="doctor-dashboard-title">
-                    Welcome, <span className="gradient-text">Dr. {doctor.first_name} {doctor.last_name}</span>
-                  </h1>
-
-                  <p className="doctor-dashboard-subtitle">
-                    Manage your real appointments, review active patients and keep your
-                    professional workflow organized from one connected dashboard.
-                  </p>
-
-                  <div className="doctor-dashboard-actions">
-                    <Link to="/profile" className="primary-btn">
-                      Open Profile
-                      <FaArrowRight />
-                    </Link>
-
-                    <Link to="/chatbot" className="secondary-btn">
-                      View AI Support
-                    </Link>
-                  </div>
+            <section className="doctor-dashboard-hero">
+              <div className="doctor-dashboard-hero-content">
+                <div className="doctor-dashboard-badge">
+                  <FaShieldHeart />
+                  <span>Professional medical workspace</span>
                 </div>
 
-                <div className="doctor-dashboard-overview soft-card">
-                  <div className="doctor-overview-header">
-                    <span>Today Overview</span>
-                    <span className="doctor-status-pill">On Duty</span>
-                  </div>
+                <h1 className="doctor-dashboard-title">
+                  Welcome,{" "}
+                  <span className="gradient-text">
+                    Dr. {doctor.first_name} {doctor.last_name}
+                  </span>
+                </h1>
 
-                  <div className="doctor-overview-grid">
-                    <div className="doctor-overview-item">
-                      <strong>Clinic</strong>
-                      <span>{doctor.clinic_name || "Not set"}</span>
-                    </div>
-                    <div className="doctor-overview-item">
-                      <strong>Main Specialty</strong>
-                      <span>{doctor.specialties?.split(",")[0] || "Not set"}</span>
-                    </div>
-                    <div className="doctor-overview-item">
-                      <strong>Experience</strong>
-                      <span>{doctor.experience_years || 0} years</span>
-                    </div>
-                    <div className="doctor-overview-item">
-                      <strong>Appointments</strong>
-                      <span>{stats.todayAppointments} today</span>
-                    </div>
+                <p className="doctor-dashboard-subtitle">
+                  Manage your appointments, review active patients and keep your
+                  professional workflow organized from one connected dashboard.
+                </p>
+
+                <div className="doctor-dashboard-actions">
+                  <Link to="/doctor/appointments" className="primary-btn">
+                    View Appointments <FaArrowRight />
+                  </Link>
+                  <Link to="/doctor/patients" className="secondary-btn">
+                    My Patients
+                  </Link>
+                </div>
+              </div>
+
+              <div className="doctor-dashboard-overview">
+                <div className="doctor-overview-header">
+                  <span>Today Overview</span>
+                  <span className="doctor-status-pill">● On Duty</span>
+                </div>
+                <div className="doctor-overview-grid">
+                  <div className="doctor-overview-item">
+                    <strong>Clinic</strong>
+                    <span>{doctor.clinic_name || "Not set"}</span>
+                  </div>
+                  <div className="doctor-overview-item">
+                    <strong>Specialty</strong>
+                    <span>{doctor.specialties?.split(",")[0]?.trim() || "Not set"}</span>
+                  </div>
+                  <div className="doctor-overview-item">
+                    <strong>Experience</strong>
+                    <span>{doctor.experience_years || 0} years</span>
+                  </div>
+                  <div className="doctor-overview-item">
+                    <strong>Today's Visits</strong>
+                    <span>{stats.todayAppointments} scheduled</span>
                   </div>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              <section className="doctor-stats-grid">
-                {statsCards.map((item, index) => (
-                  <article className="doctor-stat-card soft-card" key={index}>
-                    <div className="doctor-stat-top">
-                      <div className="icon-box">{item.icon}</div>
-                      <span className="doctor-stat-trend">{item.trend}</span>
+            <section className="doctor-stats-grid">
+              {statsCards.map((item, i) => (
+                <article className="doctor-stat-card" key={i}>
+                  <div className="doctor-stat-top">
+                    <div className="icon-box">{item.icon}</div>
+                    <span className="doctor-stat-trend">{item.trend}</span>
+                  </div>
+                  <h3>{item.value}</h3>
+                  <p>{item.label}</p>
+                </article>
+              ))}
+            </section>
+
+            <section className="doctor-dashboard-main">
+              <div className="doctor-dashboard-left">
+                <article className="doctor-section-card">
+                  <div className="doctor-section-header">
+                    <div>
+                      <h2>Appointments</h2>
+                      <p>Your latest real appointments.</p>
                     </div>
-                    <h3>{item.value}</h3>
-                    <p>{item.label}</p>
-                  </article>
-                ))}
-              </section>
+                    <Link to="/doctor/appointments" className="doctor-inline-link">
+                      Manage all <FaArrowRight />
+                    </Link>
+                  </div>
 
-              <section className="doctor-dashboard-main">
-                <div className="doctor-dashboard-left">
-                  <article className="soft-card doctor-section-card">
-                    <div className="doctor-section-header">
-                      <div>
-                        <h2>Appointments</h2>
-                        <p>Your latest real appointments.</p>
-                      </div>
-                    </div>
-
-                    <div className="doctor-schedule-list">
-                      {todaySchedule.length === 0 && <p>No appointments available.</p>}
-
-                      {todaySchedule.map((item) => (
+                  <div className="doctor-schedule-list">
+                    {todaySchedule.length === 0 ? (
+                      <div className="doctor-empty-state">No appointments scheduled.</div>
+                    ) : (
+                      todaySchedule.map((item) => (
                         <div className="doctor-schedule-item" key={item.id}>
                           <div className="doctor-schedule-main">
-                            <div className="doctor-schedule-icon">
-                              <FaUserDoctor />
-                            </div>
+                            <div className="doctor-schedule-icon"><FaUserDoctor /></div>
                             <div>
                               <h3>{item.patient_first_name} {item.patient_last_name}</h3>
                               <p>{item.notes || "Medical consultation"}</p>
-                              <span>{item.appointment_date} · {item.appointment_time}</span>
+                              <span>
+                                <FaCalendarDays style={{ marginRight: 4 }} />
+                                {formatDate(item.appointment_date)} ·{" "}
+                                <FaClock style={{ marginRight: 4 }} />
+                                {formatTime(item.appointment_time)}
+                              </span>
                             </div>
                           </div>
-
-                          <div className={`doctor-appointment-status ${item.status.toLowerCase()}`}>
+                          <div className={`doctor-appointment-status ${item.status?.toLowerCase()}`}>
                             {item.status}
                           </div>
                         </div>
-                      ))}
+                      ))
+                    )}
+                  </div>
+                </article>
+
+                <article className="doctor-section-card">
+                  <div className="doctor-section-header">
+                    <div>
+                      <h2>Recent Patients</h2>
+                      <p>Patients from your recent consultations.</p>
                     </div>
-                  </article>
+                    <Link to="/doctor/patients" className="doctor-inline-link">
+                      View all <FaArrowRight />
+                    </Link>
+                  </div>
 
-                  <article className="soft-card doctor-section-card">
-                    <div className="doctor-section-header">
-                      <div>
-                        <h2>Recent Patients</h2>
-                        <p>Patients linked to your recent consultations.</p>
-                      </div>
-                    </div>
-
-                    <div className="doctor-notes-list">
-                      {recentPatients.length === 0 && <p>No patients available.</p>}
-
-                      {recentPatients.map((item) => (
+                  <div className="doctor-notes-list">
+                    {recentPatients.length === 0 ? (
+                      <div className="doctor-empty-state">No recent patients.</div>
+                    ) : (
+                      recentPatients.map((item) => (
                         <div className="doctor-note-item" key={item.patient_user_id}>
                           <h3>{item.first_name} {item.last_name}</h3>
-                          <p>{item.phone || "No phone available"}</p>
-                          <span>Last appointment: {item.last_appointment_date}</span>
+                          {item.phone && (
+                            <p>
+                              <FaPhone style={{ marginRight: 5, color: "#059669" }} />
+                              {item.phone}
+                            </p>
+                          )}
+                          <span>Last visit: {formatDate(item.last_appointment_date)}</span>
                         </div>
-                      ))}
+                      ))
+                    )}
+                  </div>
+                </article>
+              </div>
+
+              <div className="doctor-dashboard-right">
+                <article className="doctor-side-card doctor-performance-card">
+                  <div className="doctor-section-header small">
+                    <div>
+                      <h2>Professional Snapshot</h2>
+                      <p>Live data from your account.</p>
                     </div>
-                  </article>
-                </div>
+                  </div>
 
-                <div className="doctor-dashboard-right">
-                  <article className="soft-card doctor-side-card doctor-performance-card">
-                    <div className="doctor-section-header small">
-                      <div>
-                        <h2>Professional Snapshot</h2>
-                        <p>Live professional data from your account.</p>
-                      </div>
+                  <div className="doctor-progress-ring">
+                    <div className="doctor-progress-inner">
+                      <strong>{stats.rating}</strong>
+                      <span>Clinic rating</span>
                     </div>
+                  </div>
 
-                    <div className="doctor-progress-ring">
-                      <div className="doctor-progress-inner">
-                        <strong>{stats.rating}</strong>
-                        <span>Clinic rating</span>
-                      </div>
+                  <ul className="doctor-check-list">
+                    <li>Appointments linked to doctor</li>
+                    <li>Patients loaded from database</li>
+                    <li>Profile editable from sidebar</li>
+                    <li>Schedule data available</li>
+                  </ul>
+                </article>
+
+                <article className="doctor-side-card doctor-ai-card">
+                  <div className="doctor-ai-top">
+                    <div className="doctor-ai-icon"><FaRobot /></div>
+                    <div>
+                      <h2>AI Referral Insights</h2>
+                      <p>Symptom-based specialist suggestions.</p>
                     </div>
+                  </div>
 
-                    <ul className="doctor-check-list">
-                      <li>Appointments linked to doctor</li>
-                      <li>Patients loaded from database</li>
-                      <li>Profile can be edited</li>
-                      <li>Schedule data available</li>
-                    </ul>
-                  </article>
+                  <div className="doctor-ai-tags">
+                    <span><FaStethoscope /> Triage Support</span>
+                    <span><FaUserGroup /> Patient Routing</span>
+                  </div>
 
-                  <article className="soft-card doctor-side-card doctor-ai-card">
-                    <div className="doctor-ai-top">
-                      <div className="doctor-ai-icon">
-                        <FaRobot />
-                      </div>
-                      <div>
-                        <h2>AI Referral Insights</h2>
-                        <p>Monitor symptom-based specialist suggestions.</p>
-                      </div>
-                    </div>
+                  <Link to="/chatbot" className="primary-btn doctor-ai-btn">
+                    Open Assistant <FaArrowRight />
+                  </Link>
+                </article>
+              </div>
+            </section>
 
-                    <div className="doctor-ai-tags">
-                      <span><FaStethoscope /> Triage Support</span>
-                      <span><FaUserGroup /> Patient Routing</span>
-                    </div>
+            <section className="doctor-quick-actions-section">
+              <div className="doctor-section-heading">
+                <h2 className="section-title">Quick Actions</h2>
+                <p className="section-subtitle">
+                  Access the main doctor workflows from one place.
+                </p>
+              </div>
 
-                    <Link to="/chatbot" className="primary-btn doctor-ai-btn">
-                      Open Assistant
-                      <FaArrowRight />
+              <div className="doctor-quick-actions-grid">
+                {quickActions.map((action, i) => (
+                  <article className="doctor-action-card" key={i}>
+                    <div className="icon-box">{action.icon}</div>
+                    <h3>{action.title}</h3>
+                    <p>{action.text}</p>
+                    <Link to={action.link} className="doctor-inline-link">
+                      Open action <FaArrowRight />
                     </Link>
                   </article>
-                </div>
-              </section>
-
-              <section className="doctor-quick-actions-section">
-                <div className="doctor-section-heading">
-                  <h2 className="section-title">Quick Actions</h2>
-                  <p className="section-subtitle">
-                    Access the main doctor workflows from one place.
-                  </p>
-                </div>
-
-                <div className="doctor-quick-actions-grid">
-                  {quickActions.map((action, index) => (
-                    <article className="soft-card doctor-action-card" key={index}>
-                      <div className="icon-box">{action.icon}</div>
-                      <h3>{action.title}</h3>
-                      <p>{action.text}</p>
-                      <Link to={action.link} className="doctor-inline-link">
-                        Open action
-                      </Link>
-                    </article>
-                  ))}
-                </div>
-              </section>
+                ))}
+              </div>
             </section>
+
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );
