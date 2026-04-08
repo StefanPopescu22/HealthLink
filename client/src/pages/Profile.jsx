@@ -273,7 +273,22 @@ function Profile() {
                       </div>
                     </div>
                     <div className="profile-info-grid">
-                      <ProfileInfoItem label="Date of Birth"       name="dateOfBirth"          value={formData.dateOfBirth}           editMode={editing} onChange={handleChange} type="date" />
+                      <ProfileInfoItem 
+                        label="Date of Birth" 
+                        name="dateOfBirth" 
+                        value={
+                          editing 
+                            ? formData.dateOfBirth 
+                            : (formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString('ro-RO', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                              }).replace(/\./g, '-') : "")
+                        } 
+                        editMode={editing} 
+                        onChange={handleChange} 
+                        type="date" 
+                      />                      
                       <ProfileInfoItem label="Gender"              name="gender"               value={formData.gender}                editMode={editing} onChange={handleChange} placeholder="e.g. Male, Female" />
                       <ProfileInfoItem label="Blood Group"         name="bloodGroup"           value={formData.bloodGroup}            editMode={editing} onChange={handleChange} placeholder="e.g. A+, O-" />
                       <ProfileInfoItem label="Emergency Contact"   name="emergencyContactName" value={formData.emergencyContactName}  editMode={editing} onChange={handleChange} />

@@ -439,53 +439,61 @@ function Appointments() {
                       )}
 
                       {upcomingAppointments.map((item) => (
-                        <article className="soft-card appointment-card" key={item.id}>
-                          <div className="appointment-main">
-                            <div className="appointment-icon">
-                              <FaUserDoctor />
-                            </div>
-
-                            <div className="appointment-content">
-                              <h3>
-                                Dr. {item.doctor_first_name} {item.doctor_last_name}
-                              </h3>
-                              <p>{item.clinic_name}</p>
-                              <p className="appointment-service-line">
-                                <FaStethoscope /> {item.service_name || "Service not set"}
-                              </p>
-
-                              <div className="appointment-meta">
-                                <span>
-                                  <FaLocationDot />
-                                  {item.clinic_name}
-                                </span>
-                                <span>
-                                  <FaCalendarCheck />
-                                  {item.appointment_date}
-                                </span>
-                                <span>
-                                  <FaClock />
-                                  {item.appointment_time}
-                                </span>
-                              </div>
-                            </div>
+                       <article className="soft-card appointment-card" key={item.id}>
+                        <div className="appointment-main">
+                          <div className="appointment-icon">
+                            <FaUserDoctor />
                           </div>
 
-                          <div className="appointment-card-right">
-                            <div className={`status-badge ${item.status.toLowerCase()}`}>
-                              {item.status}
-                            </div>
+                          <div className="appointment-content">
+                            <h3>
+                              Dr. {item.doctor_first_name} {item.doctor_last_name}
+                            </h3>
+                            <p>{item.clinic_name}</p>
+                            <p className="appointment-service-line">
+                              <FaStethoscope /> {item.service_name || "Service not set"}
+                            </p>
 
-                            {item.status !== "cancelled" && item.status !== "completed" && (
-                              <button
-                                className="secondary-btn appointment-cancel-btn"
-                                onClick={() => handleCancelAppointment(item.id)}
-                              >
-                                Cancel
-                              </button>
-                            )}
+                            <div className="appointment-meta">
+                              <span>
+                                <FaLocationDot />
+                                {item.clinic_name}
+                              </span>
+                              
+                              {/* Formatare Data: dd-mm-yyyy */}
+                              <span>
+                                <FaCalendarCheck />
+                                {new Date(item.appointment_date).toLocaleDateString('ro-RO', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                }).replace(/\./g, '-')}
+                              </span>
+
+                              {/* Formatare Ora: hh:mm */}
+                              <span>
+                                <FaClock />
+                                {item.appointment_time?.split(':').slice(0, 2).join(':')}
+                              </span>
+                            </div>
                           </div>
-                        </article>
+                        </div>
+
+                        <div className="appointment-card-right">
+                          <div className={`status-badge ${item.status.toLowerCase()}`}>
+                            {item.status}
+                          </div>
+
+                          {item.status !== "cancelled" && item.status !== "completed" && (
+                            <button
+                              className="secondary-btn appointment-cancel-btn"
+                              onClick={() => handleCancelAppointment(item.id)}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </article>
                       ))}
                     </div>
                   </div>
@@ -503,41 +511,49 @@ function Appointments() {
 
                       {historyAppointments.map((item) => (
                         <article className="soft-card appointment-card" key={item.id}>
-                          <div className="appointment-main">
-                            <div className="appointment-icon">
-                              <FaUserDoctor />
-                            </div>
-
-                            <div className="appointment-content">
-                              <h3>
-                                Dr. {item.doctor_first_name} {item.doctor_last_name}
-                              </h3>
-                              <p>{item.clinic_name}</p>
-                              <p className="appointment-service-line">
-                                <FaStethoscope /> {item.service_name || "Service not set"}
-                              </p>
-
-                              <div className="appointment-meta">
-                                <span>
-                                  <FaLocationDot />
-                                  {item.clinic_name}
-                                </span>
-                                <span>
-                                  <FaCalendarCheck />
-                                  {item.appointment_date}
-                                </span>
-                                <span>
-                                  <FaClock />
-                                  {item.appointment_time}
-                                </span>
-                              </div>
-                            </div>
+                        <div className="appointment-main">
+                          <div className="appointment-icon">
+                            <FaUserDoctor />
                           </div>
 
-                          <div className={`status-badge ${item.status.toLowerCase()}`}>
-                            {item.status}
+                          <div className="appointment-content">
+                            <h3>
+                              Dr. {item.doctor_first_name} {item.doctor_last_name}
+                            </h3>
+                            <p>{item.clinic_name}</p>
+                            <p className="appointment-service-line">
+                              <FaStethoscope /> {item.service_name || "Service not set"}
+                            </p>
+
+                            <div className="appointment-meta">
+                              <span>
+                                <FaLocationDot />
+                                {item.clinic_name}
+                              </span>
+                              
+                              {/* Formatare Data: dd-mm-yyyy */}
+                              <span>
+                                <FaCalendarCheck />
+                                {new Date(item.appointment_date).toLocaleDateString('ro-RO', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                }).replace(/\//g, '-')}
+                              </span>
+
+                              {/* Formatare Ora: hh:mm */}
+                              <span>
+                                <FaClock />
+                                {item.appointment_time.split(':').slice(0, 2).join(':')}
+                              </span>
+                            </div>
                           </div>
-                        </article>
+                        </div>
+
+                        <div className={`status-badge ${item.status.toLowerCase()}`}>
+                          {item.status}
+                        </div>
+                      </article>
                       ))}
                     </div>
                   </div>

@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaHeart, FaHospital, FaStar } from "react-icons/fa6";
+import {
+  FaHeart,
+  FaHospital,
+  FaLocationDot,
+  FaStar,
+  FaArrowRight,
+  FaTrash,
+  FaCheck,
+  FaXmark,
+  FaPhone,
+} from "react-icons/fa6";
 import DashboardSidebar from "../components/DashboardSidebar";
 import Footer from "../components/Footer";
 import api from "../services/api";
@@ -55,64 +65,136 @@ function PatientFavorites() {
           <DashboardSidebar />
           <div className="dashboard-page-content">
             <section className="favorites-page">
-              <div className="soft-card favorites-header">
-                <h1>Favorite Clinics</h1>
-                <p>Your saved clinics from live platform data.</p>
+              <div className="favorites-header">
+                <div className="favorites-header-text">
+                  <div className="favorites-badge">
+                    <FaHeart />
+                    Patient Dashboard
+                  </div>
+                  <h1>Favorite Clinics</h1>
+                  <p>Your saved clinics from live platform data.</p>
+                </div>
+                <div className="favorites-header-meta">
+                  <div className="favorites-count">
+                    <strong>{favorites.length}</strong>
+                    <span>Saved</span>
+                  </div>
+                </div>
               </div>
 
-              {error && <p className="favorites-message error">{error}</p>}
-              {success && <p className="favorites-message success">{success}</p>}
+              {error && (
+                <p className="favorites-message error">
+                  <FaXmark /> {error}
+                </p>
+              )}
+              {success && (
+                <p className="favorites-message success">
+                  <FaCheck /> {success}
+                </p>
+              )}
+
+              {!loading && favorites.length > 0 && (
+                <div className="favorites-results-bar">
+                  <p className="favorites-results-count">
+                    <strong>{favorites.length}</strong>{" "}
+                    {favorites.length === 1 ? "clinic" : "clinics"} saved
+                  </p>
+                </div>
+              )}
 
               {loading ? (
-                <div className="soft-card empty-state-card">Loading favorite clinics...</div>
+                <div className="favorites-loading">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="favorite-skeleton"
+                      style={{ opacity: 1 - i * 0.12 }}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div className="favorites-grid">
-                  {favorites.length === 0 && (
-                    <div className="soft-card empty-state-card">
-                      You do not have favorite clinics yet.
+                  {favorites.length === 0 ? (
+                    <div className="favorites-empty">
+                      <div className="favorites-empty-icon">
+                        <FaHeart />
+                      </div>
+                      <h3>No favorites yet</h3>
+                      <p>
+                        Browse clinics and tap the heart icon to save the ones
+                        you want to revisit.
+                      </p>
+                      <Link to="/clinics" className="fav-view-btn">
+                        Explore Clinics <FaArrowRight />
+                      </Link>
                     </div>
+                  ) : (
+                    favorites.map((clinic) => (
+                      <article className="favorite-card" key={clinic.id}>
+                        <div className="favorite-card-body">
+                          <div className="favorite-card-top">
+                            <div className="favorite-card-icon">
+                              <FaHospital />
+                            </div>
+                            <div className="favorite-card-rating">
+                              <FaStar />
+                              {clinic.rating || "0.0"}
+                            </div>
+                          </div>
+
+                          <h3>{clinic.name}</h3>
+
+                          <div className="favorite-card-chips">
+                            {clinic.city && (
+                              <span className="favorite-chip">
+                                <FaLocationDot /> {clinic.city}
+                              </span>
+                            )}
+                            {clinic.clinic_type && (
+                              <span className="favorite-chip">
+                                {clinic.clinic_type}
+                              </span>
+                            )}
+                            {clinic.phone && (
+                              <span className="favorite-chip">
+                                <FaPhone /> {clinic.phone}
+                              </span>
+                            )}
+                          </div>
+
+                          {clinic.description && (
+                            <p className="favorite-card-desc">
+                              {clinic.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="favorite-card-footer">
+                          <Link
+                            to={`/clinics/${clinic.id}`}
+                            className="fav-view-btn"
+                          >
+                            Open Clinic <FaArrowRight />
+                          </Link>
+                          <button
+                            type="button"
+                            className="fav-remove-btn"
+                            disabled={workingId === clinic.id}
+                            onClick={() => removeFavorite(clinic.id)}
+                            title="Remove from favorites"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </article>
+                    ))
                   )}
-
-                  {favorites.map((clinic) => (
-                    <article className="soft-card favorite-card" key={clinic.id}>
-                      <div className="favorite-card-top">
-                        <div className="favorite-card-icon">
-                          <FaHospital />
-                        </div>
-                        <div className="favorite-card-rating">
-                          <FaStar />
-                          <span>{clinic.rating || "0.0"}</span>
-                        </div>
-                      </div>
-
-                      <h3>{clinic.name}</h3>
-                      <p>{clinic.clinic_type}</p>
-                      <span>{clinic.city || "City not set"}</span>
-
-                      <div className="favorite-card-actions">
-                        <Link to={`/clinics/${clinic.id}`} className="secondary-btn">
-                          Open Clinic
-                        </Link>
-
-                        <button
-                          type="button"
-                          className="primary-btn"
-                          disabled={workingId === clinic.id}
-                          onClick={() => removeFavorite(clinic.id)}
-                        >
-                          <FaHeart />
-                          {workingId === clinic.id ? "Removing..." : "Remove"}
-                        </button>
-                      </div>
-                    </article>
-                  ))}
                 </div>
               )}
             </section>
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );
